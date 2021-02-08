@@ -1,13 +1,13 @@
 import json
 import time
+from datetime import date, timedelta
 
 from pathlib import Path
 
 
 class Scraper:
-    # TODO: Handle default values.
-    def __init__(self, start_date=None, end_date=None, sensor_types=None, sensor_ids=None, locations=None,
-                 measurements=None):
+    def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
+                 locations=None, measurements=None):
         self.url = "https://archive.sensor.community/"
         self.start_date = start_date
         self.end_date = end_date
@@ -40,7 +40,7 @@ class Scraper:
             settings = self.__dict__
             del settings["url"]
 
-            json.dump(settings, jsonfile)
+            json.dump(settings, jsonfile, default=str)
 
 
-test = Scraper("test", 1, 2, 3)
+test = Scraper()
