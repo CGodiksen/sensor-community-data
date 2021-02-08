@@ -49,6 +49,14 @@ class Scraper:
 
             file_urls.extend([a["href"] for a in soup.find_all('a', href=True)])
 
+        # Removing urls that do not link to a CSV file.
+        file_urls = list(filter(lambda file_url: file_url.endswith(".csv"), file_urls))
+
+        # Removing urls to data that does not use one of the specified sensors, if any were specified.
+        if self.sensor_types:
+            file_urls = list(filter(lambda file_url: any(sensor_type in file_url for sensor_type in self.sensor_types),
+                                    file_urls))
+
         return file_urls
 
     # Creating a settings file specifying which settings are used for data retrieval.
@@ -63,4 +71,4 @@ class Scraper:
             json.dump(settings, jsonfile, default=str)
 
 
-test = Scraper(end_date=date(2015, 10, 2))
+test = Scraper(end_date=date(2015, 10, 2), sensor_types=["ppd42ns"])
