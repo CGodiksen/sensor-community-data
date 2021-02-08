@@ -49,7 +49,7 @@ class Scraper:
             date_html = requests.get(date_url).text
             soup = BeautifulSoup(date_html, features="html.parser")
 
-            file_urls.extend([a["href"] for a in soup.find_all('a', href=True)])
+            file_urls.extend([f"{date_url}/{a['href']}" for a in soup.find_all('a', href=True)])
 
         # Removing urls that do not link to a CSV file.
         file_urls = list(filter(lambda file_url: file_url.endswith(".csv"), file_urls))
@@ -81,4 +81,4 @@ class Scraper:
             json.dump(settings, jsonfile, default=str)
 
 
-test = Scraper(end_date=date(2015, 10, 2), sensor_types=["sht31"])
+test = Scraper(end_date=date(2015, 10, 2))
