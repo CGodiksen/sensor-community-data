@@ -24,8 +24,8 @@ class Scraper:
 
     # Start the scraper with the given settings.
     def start(self):
-        day_urls = self.__get_date_urls()
-        # TODO: Find a list of the files from each date that should be downloaded (based on sensor list, avoid indoor)
+        date_urls = self.__get_date_urls()
+        file_urls = self.__get_file_urls(date_urls)
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
         # TODO: For each file, download it, process it and remove it.
         # TODO: Processing should include removing extra rows (based on measurements list and removing empty rows)
@@ -51,6 +51,11 @@ class Scraper:
 
             file_urls.extend([f"{date_url}/{a['href']}" for a in soup.find_all('a', href=True)])
 
+        file_urls = self.__remove_unwanted_files(file_urls)
+
+        return file_urls
+
+    def __remove_unwanted_files(self, file_urls):
         # Removing urls that do not link to a CSV file.
         file_urls = list(filter(lambda file_url: file_url.endswith(".csv"), file_urls))
 
