@@ -1,8 +1,10 @@
 import json
 import time
-from datetime import date, timedelta
+import requests
 
+from datetime import date, timedelta
 from pathlib import Path
+from bs4 import BeautifulSoup
 
 
 class Scraper:
@@ -17,11 +19,11 @@ class Scraper:
         self.measurements = measurements
 
         self.__save_data_settings()
+        print(self.__get_file_urls(self.__get_date_urls()))
 
     # Start the scraper with the given settings.
     def start(self):
         day_urls = self.__get_date_urls()
-        # TODO: Find all the urls of the dates that are going to be scraped from
         # TODO: Find a list of the files from each date that should be downloaded (based on sensor list, avoid indoor)
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
         # TODO: For each file, download it, process it and remove it.
@@ -37,6 +39,18 @@ class Scraper:
 
         return [f"{self.url}{str(self.start_date + timedelta(days=i))}" for i in range(delta.days + 1)]
 
+    # Return a list of the files that should be scraped, gathered from each date url.
+    def __get_file_urls(self, date_urls):
+        file_urls = []
+
+        for date_url in date_urls:
+            date_html = requests.get(date_url).text
+            soup = BeautifulSoup(date_html, features="html.parser")
+
+            file_urls.extend([a["href"] for a in soup.find_all('a', href=True)])
+
+        return file_urls
+
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
         path = Path(f"data/{int(time.time())}/")
@@ -49,4 +63,4 @@ class Scraper:
             json.dump(settings, jsonfile, default=str)
 
 
-test = Scraper()
+test = Scraper(end_date=date(2015, 10, 2))
