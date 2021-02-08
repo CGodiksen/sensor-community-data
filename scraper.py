@@ -20,7 +20,7 @@ class Scraper:
 
     # Start the scraper with the given settings.
     def start(self):
-        pass
+        day_urls = self.__get_date_urls()
         # TODO: Find all the urls of the dates that are going to be scraped from
         # TODO: Find a list of the files from each date that should be downloaded (based on sensor list, avoid indoor)
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
@@ -31,13 +31,19 @@ class Scraper:
         # TODO: When the file is processed the data should be written to a file.
         # TODO: Make it possible to create a statistics file that contains information about the data.
 
+    # Return list of urls corresponding to the days which should be scraped from.
+    def __get_date_urls(self):
+        delta = self.end_date - self.start_date
+
+        return [f"{self.url}{str(self.start_date + timedelta(days=i))}" for i in range(delta.days + 1)]
+
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
         path = Path(f"data/{int(time.time())}/")
         path.mkdir(parents=True, exist_ok=True)
 
         with open(path.joinpath("settings.json"), "w+") as jsonfile:
-            settings = self.__dict__
+            settings = self.__dict__.copy()
             del settings["url"]
 
             json.dump(settings, jsonfile, default=str)
