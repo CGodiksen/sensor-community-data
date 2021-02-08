@@ -159,3 +159,4 @@ pip-selfcheck.json
 .idea/modules.xml
 .idea/sensor-community-scraper.iml
 .idea/vcs.xml
+data/
