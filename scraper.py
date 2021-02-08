@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
-                 locations=None, measurements=None):
+                 locations=None, measurements=None, remove_indoor=True):
         self.url = "https://archive.sensor.community/"
         self.start_date = start_date
         self.end_date = end_date
@@ -17,6 +17,7 @@ class Scraper:
         self.sensor_ids = sensor_ids
         self.locations = locations
         self.measurements = measurements
+        self.remove_indoor = remove_indoor
 
         self.__save_data_settings()
         print(self.__get_file_urls(self.__get_date_urls()))
@@ -32,6 +33,7 @@ class Scraper:
         # TODO: To avoid repeated API usage a location file should be kept that caches locations.
         # TODO: When the file is processed the data should be written to a file.
         # TODO: Make it possible to create a statistics file that contains information about the data.
+        # TODO: Implement HTML caching if it is very slow.
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):
@@ -57,10 +59,13 @@ class Scraper:
             file_urls = list(filter(
                 lambda file_url: any(sensor_type in file_url for sensor_type in self.sensor_types), file_urls))
 
-        # Removing urls to data that does not use one of the specified sensor ids, if any were specified.
+        # Doing the same as above but for sensor ids.
         if self.sensor_ids:
             file_urls = list(filter(
                 lambda file_url: any(f"sensor_{sensor_id}" in file_url for sensor_id in self.sensor_ids), file_urls))
+
+        if self.remove_indoor:
+            file_urls = list(filter(lambda file_url: "indoor" not in file_url, file_urls))
 
         return file_urls
 
@@ -76,4 +81,4 @@ class Scraper:
             json.dump(settings, jsonfile, default=str)
 
 
-test = Scraper(end_date=date(2015, 10, 2), sensor_types=["ppd42ns"], sensor_ids=[40, 35, 27])
+test = Scraper(end_date=date(2015, 10, 2), sensor_types=["sht31"])
