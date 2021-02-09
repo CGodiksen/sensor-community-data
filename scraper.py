@@ -15,7 +15,7 @@ from sensor_statistics import SensorStatistics
 # TODO: Data cleaning
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
-                 locations=None, measurements=None, remove_indoor=True):
+                 locations=None, measurements=None, remove_indoor=True, create_statistics=True):
         self.url = "https://archive.sensor.community/"
         self.start_date = start_date
         self.end_date = end_date
@@ -24,6 +24,7 @@ class Scraper:
         self.locations = locations
         self.measurements = measurements
         self.remove_indoor = remove_indoor
+        self.create_statistics = create_statistics
 
         self.start()
 
@@ -52,7 +53,8 @@ class Scraper:
 
                 df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
 
-        SensorStatistics(dataframes, folder_path).create_statistics_file()
+        if self.create_statistics:
+            SensorStatistics(dataframes, folder_path).create_statistics_file()
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):
