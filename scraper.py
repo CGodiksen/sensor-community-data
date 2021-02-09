@@ -22,23 +22,36 @@ class Scraper:
         self.measurements = measurements
         self.remove_indoor = remove_indoor
 
-        self.__save_data_settings()
         self.start()
 
-    # Start the scraper with the given settings.
     def start(self):
+        folder_path = self.__save_data_settings()
+
+        # Retrieving the data from the online archive.
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
         dataframes = [pd.read_csv(file_url, sep=";") for file_url in file_urls]
-
         self.__remove_excess_columns(dataframes)
         self.__simplify_location(dataframes)
 
+        # Writing each dataframe to the final folder structure.
+        for df in dataframes:
+            location = df.at[0, "location"]
+
+            # TODO: Currently removing data that has no location, potentially change this after discussing it.
+            if location:
+                sensor_id = df.at[0, "sensor_id"]
+                date = df.at[0, "timestamp"][:10]
+
+                print(location, sensor_id, date)
+
+                path = Path(f"{folder_path}/{location}/")
+                path.mkdir(parents=True, exist_ok=True)
+
+                df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
+
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
-        # TODO: Location, lat and lon should be turned into a city based on reverse geocoding (maps API)
-        # TODO: To avoid repeated API usage a location file should be kept that caches locations.
-        # TODO: When the file is processed the data should be written to a file.
         # TODO: Make it possible to create a statistics file that contains information about the data.
         # TODO: Implement HTML caching if it is very slow.
         # TODO: Data cleaning
@@ -157,5 +170,8 @@ class Scraper:
 
             json.dump(settings, jsonfile, default=str)
 
+        return path
 
-test = Scraper(end_date=date(2015, 10, 1), measurements=["P1", "P2"])
+
+test = Scraper(start_date=date(2016, 12, 6), end_date=date(2016, 12, 6), measurements=["P1", "P2"],
+               sensor_types=["sds011"])
