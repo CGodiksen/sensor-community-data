@@ -1,6 +1,8 @@
 import json
 import time
 import requests
+import io
+import pandas as pd
 
 from datetime import date, timedelta
 from pathlib import Path
@@ -20,12 +22,17 @@ class Scraper:
         self.remove_indoor = remove_indoor
 
         self.__save_data_settings()
-        print(self.__get_file_urls(self.__get_date_urls()))
+        self.start()
 
     # Start the scraper with the given settings.
     def start(self):
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
+
+        dataframes = [pd.read_csv(file_url, sep=";") for file_url in file_urls]
+        self.__remove_excess_columns(dataframes)
+        print(list(dataframes[0]))
+
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
         # TODO: For each file, download it, process it and remove it.
         # TODO: Processing should include removing extra rows (based on measurements list and removing empty rows)
@@ -74,6 +81,18 @@ class Scraper:
 
         return file_urls
 
+    # Removing columns from the given dataframes that are not needed based on the specified measurements list.
+    def __remove_excess_columns(self, dataframes):
+        if self.measurements:
+            # Columns that are constant for all files from sensor community.
+            common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
+            columns_to_keep = common_columns + self.measurements
+
+            for dataframe in dataframes:
+                columns_to_remove = [column for column in list(dataframe) if column not in columns_to_keep]
+                for column in columns_to_remove:
+                    del dataframe[column]
+
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
         path = Path(f"data/{int(time.time())}/")
@@ -86,4 +105,4 @@ class Scraper:
             json.dump(settings, jsonfile, default=str)
 
 
-test = Scraper(end_date=date(2015, 10, 2))
+test = Scraper(end_date=date(2015, 10, 1), measurements=["P1", "P2"])
