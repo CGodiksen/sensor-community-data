@@ -17,6 +17,8 @@ class Statistics:
         for df in dataframes:
             measurement_count += len(df.index)
 
+        return measurement_count
+
     @staticmethod
     def __get_sensor_count(dataframes):
         sensors = []
@@ -27,8 +29,8 @@ class Statistics:
 
     @staticmethod
     def __get_time_frame(dataframes):
-        earliest_date = None
-        latest_date = None
+        earliest_date = ""
+        latest_date = ""
 
         for df in dataframes:
             date = df.at[0, "timestamp"][:10]
@@ -38,9 +40,21 @@ class Statistics:
             elif date > latest_date:
                 latest_date = date
 
-    @staticmethod
-    def __get_location_statistics(dataframes):
+        return f"{earliest_date} - {latest_date}"
+
+    def __get_location_statistics(self, dataframes):
         # Split the data into cities.
+        grouped_dataframes = self.__group_by_location(dataframes)
+
+        location_statistics = {}
+        for location, location_dataframes in grouped_dataframes:
+            location_statistics[location] = {
+                "time_frame": self.__get_time_frame(location_dataframes),
+                "sensor_count": self.__get_sensor_count(location_dataframes),
+                "measurement_count": self.__get_measurement_count(location_dataframes),
+            }
+
+        return location_statistics
 
     # Return a dictionary from locations to dataframes related to the specific locations.
     @staticmethod
