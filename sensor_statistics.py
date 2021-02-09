@@ -3,7 +3,7 @@ import json
 import pandas as pd
 
 
-class Statistics:
+class SensorStatistics:
     def __init__(self, dataframes, save_path):
         self.dataframes = dataframes
         self.save_path = save_path
@@ -17,7 +17,7 @@ class Statistics:
             "location_statistics": self.__get_location_statistics(self.dataframes)
         }
 
-        with open(self.save_path, "r+") as jsonfile:
+        with open(f"{self.save_path}/statistics.json", "w+") as jsonfile:
             json.dump(statistics, jsonfile)
 
     @staticmethod
@@ -38,7 +38,7 @@ class Statistics:
 
     @staticmethod
     def __get_time_frame(dataframes):
-        earliest_date = ""
+        earliest_date = dataframes[0].at[0, "timestamp"][:10]
         latest_date = ""
 
         for df in dataframes:
@@ -56,7 +56,7 @@ class Statistics:
         grouped_dataframes = self.__group_by_location(dataframes)
 
         location_statistics = {}
-        for location, location_dataframes in grouped_dataframes:
+        for location, location_dataframes in grouped_dataframes.items():
             location_statistics[location] = {
                 "time_frame": self.__get_time_frame(location_dataframes),
                 "sensor_count": self.__get_sensor_count(location_dataframes),

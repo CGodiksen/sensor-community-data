@@ -8,8 +8,11 @@ from datetime import date, timedelta
 from pathlib import Path
 from bs4 import BeautifulSoup
 from pathlib import Path
+from sensor_statistics import SensorStatistics
 
 
+# TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
+# TODO: Data cleaning
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
                  locations=None, measurements=None, remove_indoor=True):
@@ -44,17 +47,12 @@ class Scraper:
                 sensor_id = df.at[0, "sensor_id"]
                 date = df.at[0, "timestamp"][:10]
 
-                print(location, sensor_id, date)
-
                 path = Path(f"{folder_path}/{location}/")
                 path.mkdir(parents=True, exist_ok=True)
 
                 df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
 
-        # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
-        # TODO: Make it possible to create a statistics file that contains information about the data.
-        # TODO: Implement HTML caching if it is very slow.
-        # TODO: Data cleaning
+        SensorStatistics(dataframes, folder_path).create_statistics_file()
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):
@@ -173,5 +171,5 @@ class Scraper:
         return path
 
 
-test = Scraper(start_date=date(2016, 12, 6), end_date=date(2016, 12, 10), measurements=["P1", "P2"],
+test = Scraper(start_date=date(2016, 12, 6), end_date=date(2016, 12, 8), measurements=["P1", "P2"],
                sensor_types=["sds011"])
