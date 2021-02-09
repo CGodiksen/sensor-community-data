@@ -12,8 +12,9 @@ class Statistics:
 
     @staticmethod
     def __get_measurement_count(dataframes):
-        # Also get monthly count.
-        pass
+        measurement_count = 0
+        for df in dataframes:
+            measurement_count += len(df.index)
 
     @staticmethod
     def __get_sensor_count(dataframes):
