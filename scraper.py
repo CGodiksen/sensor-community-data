@@ -97,12 +97,6 @@ class Scraper:
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, dataframes):
-        maps_api_url = "https://maps.googleapis.com/maps/api/geocode/json?"
-        result_type = "&result_type=locality&result_type=political"
-
-        with open("config.json", "r") as configfile:
-            key = f"&key={json.load(configfile)['maps_api_key']}"
-
         for df in dataframes:
             location_id = df.at[0, "location"]
             lat = df.at[0, "lat"]
@@ -111,30 +105,39 @@ class Scraper:
             location = self.__get_city_country(location_id, lat, lng)
 
     # Return a string with the format "city-country" based on the given latitude and longitude.
-    @staticmethod
-    def __get_city_country(location_id, lat, lng):
-        # Checking if the location is cached, if not then retrieve it with reverse geocoding.
+    def __get_city_country(self, location_id, lat, lng):
         with open("location_cache.json", "r+") as cachefile:
             location_cache = json.load(cachefile)
 
+            # Checking if the location is cached, if not then retrieve it with reverse geocoding.
             if location_id in location_cache:
                 location = location_cache["location_id"]
             else:
-                # Making a request to the Google Maps reverse geocoding API.
-                api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
-                address_comp = api_response["results"][0]["address_components"]
-
-                # Extracting the city and country name by filtering on the address component type.
-                city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
-                country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
-
-                location = f"{city}-{country}"
+                location = self.__reverse_geocode(lat, lng)
 
                 # Saving the newly retrieved location in the cache.
                 location_cache[location_id] = location
                 json.dump(location_cache, cachefile)
 
         return location
+
+    @staticmethod
+    def __reverse_geocode(lat, lng):
+        maps_api_url = "https://maps.googleapis.com/maps/api/geocode/json?"
+        result_type = "&result_type=locality&result_type=political"
+
+        with open("config.json", "r") as configfile:
+            key = f"&key={json.load(configfile)['maps_api_key']}"
+
+        # Making a request to the Google Maps reverse geocoding API.
+        api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
+        address_comp = api_response["results"][0]["address_components"]
+
+        # Extracting the city and country name by filtering on the address component type.
+        city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
+        country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
+
+        return f"{city}-{country}"
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
