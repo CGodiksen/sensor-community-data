@@ -54,7 +54,7 @@ class Scraper:
                 df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
 
         if self.create_statistics:
-            SensorStatistics(dataframes, folder_path).create_statistics_file()
+            SensorStatistics(dataframes, folder_path, self.measurements).create_statistics_file()
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):

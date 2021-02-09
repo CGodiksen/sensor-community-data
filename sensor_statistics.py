@@ -4,9 +4,12 @@ import pandas as pd
 
 
 class SensorStatistics:
-    def __init__(self, dataframes, save_path):
+    def __init__(self, dataframes, save_path, measurements):
         self.dataframes = dataframes
         self.save_path = save_path
+        self.measurements = measurements
+
+        self.__get_measurement_statistics(dataframes)
 
     # Create a JSON file with statistics about the data in the given dataframes.
     def create_statistics_file(self):
@@ -50,6 +53,18 @@ class SensorStatistics:
                 latest_date = date
 
         return f"{earliest_date} - {latest_date}"
+
+    def __get_measurement_statistics(self, dataframes):
+        measurement_statistics = {}
+        total_dataframe = pd.concat(dataframes)
+
+        description = total_dataframe.describe()
+        statistic_names = list(description.index)
+
+        for measurement in self.measurements:
+            measurement_statistics[measurement] = dict(zip(statistic_names, description[measurement]))
+
+        return measurement_statistics
 
     def __get_location_statistics(self, dataframes):
         # Split the data into cities.
