@@ -32,7 +32,8 @@ class Scraper:
         dataframes = [pd.read_csv(file_url, sep=";") for file_url in file_urls]
         self.__remove_excess_columns(dataframes)
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-            print(dataframes[0])
+            pass
+            # print(dataframes[0])
 
         self.__reverse_geocode()
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
@@ -96,7 +97,18 @@ class Scraper:
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with a city name.
     def __reverse_geocode(self):
-        pass
+        maps_api_url = "https://maps.googleapis.com/maps/api/geocode/json?"
+        result_type = "&result_type=locality&result_type=political"
+
+        with open("config.json", "r") as configfile:
+            key = f"&key={json.load(configfile)['maps_api_key']}"
+
+        lat = "53.250538"
+        lng = "10.409248"
+
+        api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
+        city = api_response["results"][0]["address_components"][0]["long_name"]
+        print(city)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
