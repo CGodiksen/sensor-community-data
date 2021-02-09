@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import date, timedelta
 from pathlib import Path
 from bs4 import BeautifulSoup
+from pathlib import Path
 
 
 class Scraper:
@@ -30,12 +31,10 @@ class Scraper:
         file_urls = self.__get_file_urls(date_urls)
 
         dataframes = [pd.read_csv(file_url, sep=";") for file_url in file_urls]
-        self.__remove_excess_columns(dataframes)
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-            pass
-            # print(dataframes[0])
 
+        self.__remove_excess_columns(dataframes)
         self.__simplify_location(dataframes)
+
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
         # TODO: Location, lat and lon should be turned into a city based on reverse geocoding (maps API)
         # TODO: To avoid repeated API usage a location file should be kept that caches locations.
@@ -102,21 +101,29 @@ class Scraper:
             lat = df.at[0, "lat"]
             lng = df.at[0, "lon"]
 
-            location = self.__get_city_country(location_id, lat, lng)
+            if not pd.isnull(lat) and not pd.isnull(lng):
+                location = self.__get_city_country(str(location_id), lat, lng)
+            else:
+                location = ""
+
+            del df["lat"]
+            del df["lon"]
+            df.loc[:, "location"] = location
 
     # Return a string with the format "city-country" based on the given latitude and longitude.
     def __get_city_country(self, location_id, lat, lng):
-        with open("location_cache.json", "r+") as cachefile:
+        with open("location_cache.json", "r") as cachefile:
             location_cache = json.load(cachefile)
 
-            # Checking if the location is cached, if not then retrieve it with reverse geocoding.
-            if location_id in location_cache:
-                location = location_cache["location_id"]
-            else:
-                location = self.__reverse_geocode(lat, lng)
+        # Checking if the location is cached, if not then retrieve it with reverse geocoding.
+        if location_id in location_cache:
+            location = location_cache[location_id]
+        else:
+            location = self.__reverse_geocode(lat, lng)
 
-                # Saving the newly retrieved location in the cache.
-                location_cache[location_id] = location
+            # Saving the newly retrieved location in the cache.
+            location_cache[location_id] = location
+            with open("location_cache.json", "w") as cachefile:
                 json.dump(location_cache, cachefile)
 
         return location
