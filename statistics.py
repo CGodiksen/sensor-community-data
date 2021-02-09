@@ -1,4 +1,5 @@
 import collections
+import json
 import pandas as pd
 
 
@@ -9,7 +10,15 @@ class Statistics:
 
     # Create a JSON file with statistics about the data in the given dataframes.
     def create_statistics_file(self):
-        pass
+        statistics = {
+            "time_frame": self.__get_time_frame(self.dataframes),
+            "sensor_count": self.__get_sensor_count(self.dataframes),
+            "measurement_count": self.__get_measurement_count(self.dataframes),
+            "location_statistics": self.__get_location_statistics(self.dataframes)
+        }
+
+        with open(self.save_path, "r+") as jsonfile:
+            json.dump(statistics, jsonfile)
 
     @staticmethod
     def __get_measurement_count(dataframes):
