@@ -16,7 +16,7 @@ class SensorStatistics:
         statistics = {
             "time_frame": self.__get_time_frame(self.dataframes),
             "sensor_count": self.__get_sensor_count(self.dataframes),
-            "measurement_count": self.__get_measurement_count(self.dataframes),
+            **self.__get_measurement_statistics(self.dataframes),
             "location_statistics": self.__get_location_statistics(self.dataframes)
         }
 
@@ -46,6 +46,7 @@ class SensorStatistics:
 
         return f"{earliest_date} - {latest_date}"
 
+    # Return a dictionary with a key for each measurement. The value is a dict of statistics about the key measurement.
     def __get_measurement_statistics(self, dataframes):
         measurement_statistics = {}
         total_dataframe = pd.concat(dataframes)
@@ -67,7 +68,7 @@ class SensorStatistics:
             location_statistics[location] = {
                 "time_frame": self.__get_time_frame(location_dataframes),
                 "sensor_count": self.__get_sensor_count(location_dataframes),
-                "measurement_count": self.__get_measurement_count(location_dataframes),
+                **self.__get_measurement_statistics(location_dataframes),
             }
 
         return location_statistics
