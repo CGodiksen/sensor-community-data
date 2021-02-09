@@ -31,16 +31,17 @@ class Scraper:
 
         dataframes = [pd.read_csv(file_url, sep=";") for file_url in file_urls]
         self.__remove_excess_columns(dataframes)
-        print(list(dataframes[0]))
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            print(dataframes[0])
 
+        self.__reverse_geocode()
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
-        # TODO: For each file, download it, process it and remove it.
-        # TODO: Processing should include removing extra rows (based on measurements list and removing empty rows)
         # TODO: Location, lat and lon should be turned into a city based on reverse geocoding (maps API)
         # TODO: To avoid repeated API usage a location file should be kept that caches locations.
         # TODO: When the file is processed the data should be written to a file.
         # TODO: Make it possible to create a statistics file that contains information about the data.
         # TODO: Implement HTML caching if it is very slow.
+        # TODO: Data cleaning
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):
@@ -92,6 +93,10 @@ class Scraper:
                 columns_to_remove = [column for column in list(dataframe) if column not in columns_to_keep]
                 for column in columns_to_remove:
                     del dataframe[column]
+
+    # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with a city name.
+    def __reverse_geocode(self):
+        pass
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
