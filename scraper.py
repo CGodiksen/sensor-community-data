@@ -35,7 +35,7 @@ class Scraper:
             pass
             # print(dataframes[0])
 
-        self.__reverse_geocode()
+        self.__reverse_geocode(dataframes)
         # TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
         # TODO: Location, lat and lon should be turned into a city based on reverse geocoding (maps API)
         # TODO: To avoid repeated API usage a location file should be kept that caches locations.
@@ -95,22 +95,23 @@ class Scraper:
                 for column in columns_to_remove:
                     del dataframe[column]
 
-    # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with a city name.
-    def __reverse_geocode(self):
+    # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city/country.
+    def __reverse_geocode(self, dataframes):
         maps_api_url = "https://maps.googleapis.com/maps/api/geocode/json?"
         result_type = "&result_type=locality&result_type=political"
 
         with open("config.json", "r") as configfile:
             key = f"&key={json.load(configfile)['maps_api_key']}"
 
-        lat = "48.801884"
-        lng = "19.634357"
+        location_id = dataframes[-1].at[0, "location"]
+        lat = dataframes[-1].at[0, "lat"]
+        lng = dataframes[-1].at[0, "lon"]
 
         api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
-        address_components = api_response["results"][0]["address_components"]
+        address_comp = api_response["results"][0]["address_components"]
 
-        city = list(filter(lambda x: x["types"] == ["locality", "political"], address_components))[0]["long_name"]
-        country = list(filter(lambda x: x["types"] == ["country", "political"], address_components))[0]["long_name"]
+        city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
+        country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
 
         print(city, country)
 
