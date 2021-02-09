@@ -90,10 +90,10 @@ class Scraper:
             common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
             columns_to_keep = common_columns + self.measurements
 
-            for dataframe in dataframes:
-                columns_to_remove = [column for column in list(dataframe) if column not in columns_to_keep]
+            for df in dataframes:
+                columns_to_remove = [column for column in list(df) if column not in columns_to_keep]
                 for column in columns_to_remove:
-                    del dataframe[column]
+                    del df[column]
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city/country.
     def __reverse_geocode(self, dataframes):
@@ -103,17 +103,18 @@ class Scraper:
         with open("config.json", "r") as configfile:
             key = f"&key={json.load(configfile)['maps_api_key']}"
 
-        location_id = dataframes[-1].at[0, "location"]
-        lat = dataframes[-1].at[0, "lat"]
-        lng = dataframes[-1].at[0, "lon"]
+        for df in dataframes:
+            location_id = df.at[0, "location"]
+            lat = df.at[0, "lat"]
+            lng = df.at[0, "lon"]
 
-        api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
-        address_comp = api_response["results"][0]["address_components"]
+            api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
+            address_comp = api_response["results"][0]["address_components"]
 
-        city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
-        country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
+            city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
+            country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
 
-        print(city, country)
+            print(city, country)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
