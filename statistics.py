@@ -17,7 +17,11 @@ class Statistics:
 
     @staticmethod
     def __get_sensor_count(dataframes):
+        sensors = []
+        for df in dataframes:
+            sensors.append(df.at[0, "sensor_id"])
 
+        return len(list(set(sensors)))
 
     @staticmethod
     def __get_time_frame(dataframes):
