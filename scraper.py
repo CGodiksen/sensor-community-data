@@ -103,12 +103,16 @@ class Scraper:
         with open("config.json", "r") as configfile:
             key = f"&key={json.load(configfile)['maps_api_key']}"
 
-        lat = "53.250538"
-        lng = "10.409248"
+        lat = "48.801884"
+        lng = "19.634357"
 
         api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
-        city = api_response["results"][0]["address_components"][0]["long_name"]
-        print(city)
+        address_components = api_response["results"][0]["address_components"]
+
+        city = list(filter(lambda x: x["types"] == ["locality", "political"], address_components))[0]["long_name"]
+        country = list(filter(lambda x: x["types"] == ["country", "political"], address_components))[0]["long_name"]
+
+        print(city, country)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
