@@ -24,14 +24,6 @@ class SensorStatistics:
             json.dump(statistics, jsonfile)
 
     @staticmethod
-    def __get_measurement_count(dataframes):
-        measurement_count = 0
-        for df in dataframes:
-            measurement_count += len(df.index)
-
-        return measurement_count
-
-    @staticmethod
     def __get_sensor_count(dataframes):
         sensors = []
         for df in dataframes:
