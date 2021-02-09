@@ -108,13 +108,26 @@ class Scraper:
             lat = df.at[0, "lat"]
             lng = df.at[0, "lon"]
 
-            api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
-            address_comp = api_response["results"][0]["address_components"]
+            # Checking if the location is cached, if not then retrieving it with reverse geocoding.
+            with open("location_cache.json", "r+") as cachefile:
+                location_cache = json.load(cachefile)
 
-            city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
-            country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
+                if location_id in location_cache:
+                    location = location_cache["location_id"]
+                else:
+                    # Making a request to the Google Maps reverse geocoding API.
+                    api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
+                    addr_comp = api_response["results"][0]["address_components"]
 
-            print(city, country)
+                    # Extracting the city and country name by filtering on the address component type.
+                    city = list(filter(lambda x: x["types"] == ["locality", "political"], addr_comp))[0]["long_name"]
+                    country = list(filter(lambda x: x["types"] == ["country", "political"], addr_comp))[0]["long_name"]
+
+                    location = f"{city}-{country}"
+
+                    # Saving the newly retrieved location in the cache.
+                    location_cache[location_id] = location
+                    json.dump(location_cache, cachefile)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
