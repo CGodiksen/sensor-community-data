@@ -1,3 +1,4 @@
+import collections
 import pandas as pd
 
 
@@ -38,5 +39,15 @@ class Statistics:
                 latest_date = date
 
     @staticmethod
-    def __get_city_statistics(dataframes):
-        pass
+    def __get_location_statistics(dataframes):
+        # Split the data into cities.
+
+    # Return a dictionary from locations to dataframes related to the specific locations.
+    @staticmethod
+    def __group_by_location(dataframes):
+        grouped_dataframes = collections.defaultdict(list)
+
+        for df in dataframes:
+            grouped_dataframes[df.at[0, "location"]].append(df)
+
+        return grouped_dataframes
