@@ -13,6 +13,7 @@ class SensorStatistics:
 
     # Create a JSON file with statistics about the data in the given dataframes.
     def create_statistics_file(self):
+        print("Creating statistics file...")
         statistics = {
             "time_frame": self.__get_time_frame(self.dataframes),
             "sensor_count": self.__get_sensor_count(self.dataframes),

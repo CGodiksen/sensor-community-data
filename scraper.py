@@ -35,9 +35,17 @@ class Scraper:
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
-        dataframes = [pd.read_csv(file_url, sep=";") for file_url in file_urls]
+        print("Cleaning data...")
+
+        def read_csv_helper(file_url):
+            print(f"Turning {file_url} into a dataframe")
+            return pd.read_csv(file_url, sep=";")
+
+        dataframes = [read_csv_helper(file_url) for file_url in file_urls]
+        print("Turned csv files into dataframes")
         self.__remove_excess_columns(dataframes)
         self.__simplify_location(dataframes)
+        print("Finished cleaning data")
 
         # Writing each dataframe to the final folder structure.
         for df in dataframes:
@@ -67,12 +75,14 @@ class Scraper:
         file_urls = []
 
         for date_url in date_urls:
+            print(f"Retrieving file urls from {date_url}...")
             date_html = requests.get(date_url).text
             soup = BeautifulSoup(date_html, features="html.parser")
 
             file_urls.extend([f"{date_url}/{a['href']}" for a in soup.find_all('a', href=True)])
 
         file_urls = self.__remove_unwanted_files(file_urls)
+        print(f"Retrieved {len(file_urls)} file urls")
 
         return file_urls
 
@@ -97,6 +107,7 @@ class Scraper:
 
     # Removing columns from the given dataframes that are not needed based on the specified measurements list.
     def __remove_excess_columns(self, dataframes):
+        print("Removing excess columns...")
         if self.measurements:
             # Columns that are constant for all files from sensor community.
             common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
@@ -106,6 +117,7 @@ class Scraper:
                 columns_to_remove = [column for column in list(df) if column not in columns_to_keep]
                 for column in columns_to_remove:
                     del df[column]
+        print("Finished removing excess columns")
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, dataframes):
@@ -122,6 +134,7 @@ class Scraper:
             del df["lat"]
             del df["lon"]
             df.loc[:, "location"] = location
+            print(f"Simplified {location_id}, {lat}, {lng} to {location}")
 
     # Return a string with the format "city-country" based on the given latitude and longitude.
     def __get_city_country(self, location_id, lat, lng):
@@ -143,6 +156,7 @@ class Scraper:
 
     @staticmethod
     def __reverse_geocode(lat, lng):
+        print(f"Reverse geocoding {lat}, {lng}")
         maps_api_url = "https://maps.googleapis.com/maps/api/geocode/json?"
         result_type = "&result_type=locality&result_type=political"
 
