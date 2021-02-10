@@ -33,6 +33,9 @@ class Scraper:
         with open("location_cache.json", "r") as cachefile:
             self.location_cache = json.load(cachefile)
 
+        with open("config.json", "r") as configfile:
+            self.api_key = json.load(configfile)['maps_api_key']
+
         self.start()
 
     def start(self):
@@ -134,14 +137,11 @@ class Scraper:
 
         return location
 
-    @staticmethod
-    def __reverse_geocode(lat, lng):
+    def __reverse_geocode(self, lat, lng):
         print(f"Reverse geocoding {lat}, {lng}")
         maps_api_url = "https://maps.googleapis.com/maps/api/geocode/json?"
         result_type = "&result_type=locality&result_type=political"
-
-        with open("config.json", "r") as configfile:
-            key = f"&key={json.load(configfile)['maps_api_key']}"
+        key = f"&key={self.api_key}"
 
         # Making a request to the Google Maps reverse geocoding API.
         api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
