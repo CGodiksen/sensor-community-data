@@ -30,6 +30,9 @@ class Scraper:
         self.remove_indoor = remove_indoor
         self.create_statistics = create_statistics
 
+        with open("location_cache.json", "r") as cachefile:
+            self.location_cache = json.load(cachefile)
+
         self.start()
 
     def start(self):
@@ -43,6 +46,10 @@ class Scraper:
 
         if self.create_statistics and dataframes:
             SensorStatistics(dataframes, folder_path, self.measurements).create_statistics_file()
+
+        # Saving the potentially changed cache to persistent storage.
+        with open("location_cache.json", "w") as cachefile:
+            json.dump(self.location_cache, cachefile)
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):
@@ -116,19 +123,14 @@ class Scraper:
 
     # Return a string with the format "city-country" based on the given latitude and longitude.
     def __get_city_country(self, location_id, lat, lng):
-        with open("location_cache.json", "r") as cachefile:
-            location_cache = json.load(cachefile)
-
         # Checking if the location is cached, if not then retrieve it with reverse geocoding.
-        if location_id in location_cache:
-            location = location_cache[location_id]
+        if location_id in self.location_cache:
+            location = self.location_cache[location_id]
         else:
             location = self.__reverse_geocode(lat, lng)
 
             # Saving the newly retrieved location in the cache.
-            location_cache[location_id] = location
-            with open("location_cache.json", "w") as cachefile:
-                json.dump(location_cache, cachefile)
+            self.location_cache[location_id] = location
 
         return location
 
