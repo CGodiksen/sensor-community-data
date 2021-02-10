@@ -45,7 +45,7 @@ class Scraper:
 
         self.__to_csv_helper(dataframes, folder_path)
 
-        if self.create_statistics:
+        if self.create_statistics and dataframes:
             SensorStatistics(dataframes, folder_path, self.measurements).create_statistics_file()
 
     # Return list of urls corresponding to the days which should be scraped from.
