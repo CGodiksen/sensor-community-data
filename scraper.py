@@ -11,7 +11,7 @@ from pathlib import Path
 from sensor_statistics import SensorStatistics
 
 
-# TODO: If the used config matches an existing config file then don't downloaded already downloaded files.
+# TODO: If the used config matches an existing config file then don't download already downloaded files.
 # TODO: Data cleaning
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
@@ -148,14 +148,17 @@ class Scraper:
 
         # Making a request to the Google Maps reverse geocoding API.
         api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
-        # TODO: Handle problems that arise when api response is empty.
-        address_comp = api_response["results"][0]["address_components"]
 
-        # Extracting the city and country name by filtering on the address component type.
-        city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
-        country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
+        if api_response["results"]:
+            address_comp = api_response["results"][0]["address_components"]
 
-        return f"{city}-{country}"
+            # Extracting the city and country name by filtering on the address component type.
+            city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
+            country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
+
+            return f"{city}-{country}"
+        else:
+            return ""
 
     # Writing each dataframe to the final folder structure.
     @staticmethod
