@@ -96,13 +96,20 @@ class Scraper:
 
         return file_urls
 
-    @staticmethod
-    def __read_csv_helper(file_urls):
+    def __read_csv_helper(self, file_urls):
+        # Columns that are constant for all files from sensor community.
+        common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
+
         dataframes = []
         for file_url in file_urls:
             print(f"Turning {file_url} into a dataframe")
 
-            df = pd.read_csv(file_url, sep=";")
+            # Only reading the common columns and specified measurements if a list of measurements were given.
+            if self.measurements:
+                df = pd.read_csv(file_url, sep=";", usecols=common_columns + self.measurements)
+            else:
+                df = pd.read_csv(file_url, sep=";")
+
             dataframes.append(df)
 
         return dataframes
@@ -111,8 +118,6 @@ class Scraper:
     def __remove_excess_columns(self, dataframes):
         print("Removing excess columns...")
         if self.measurements:
-            # Columns that are constant for all files from sensor community.
-            common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
             columns_to_keep = common_columns + self.measurements
 
             for df in dataframes:
