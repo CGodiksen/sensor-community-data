@@ -141,7 +141,7 @@ class Scraper:
         # Making a request to the Google Maps reverse geocoding API.
         api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
 
-        if api_response["results"]:
+        try:
             address_comp = api_response["results"][0]["address_components"]
 
             # Extracting the city and country name by filtering on the address component type.
@@ -149,7 +149,7 @@ class Scraper:
             country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
 
             return f"{city}-{country}"
-        else:
+        except IndexError:
             return ""
 
     # Writing each dataframe to the final folder structure.
