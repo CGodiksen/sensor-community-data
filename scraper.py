@@ -39,11 +39,7 @@ class Scraper:
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
-        dataframes = Pool().map(self.__read_csv_helper, file_urls)
-
-        self.__simplify_location(dataframes)
-
-        self.__to_csv_helper(dataframes, folder_path)
+        dataframes = Pool().map(lambda file_url: self.__process_file(file_url, folder_path), file_urls)
 
         if self.create_statistics and dataframes:
             SensorStatistics(dataframes, folder_path, self.measurements).create_statistics_file()
@@ -89,27 +85,34 @@ class Scraper:
 
         return file_urls
 
+    # Fully processing a single file, including reading it from the archive, cleaning the data and saving it to storage.
+    def __process_file(self, file_url, folder_path):
+        df = self.__read_csv_helper(file_url)
+        self.__simplify_location(df)
+        self.__to_csv_helper(df, folder_path)
+
+        return df
+
     def __read_csv_helper(self, file_url):
         print(f"Converting {file_url} to a dataframe")
 
         return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
-    def __simplify_location(self, dataframes):
-        for df in dataframes:
-            location_id = df.at[0, "location"]
-            lat = df.at[0, "lat"]
-            lng = df.at[0, "lon"]
+    def __simplify_location(self, df):
+        location_id = df.at[0, "location"]
+        lat = df.at[0, "lat"]
+        lng = df.at[0, "lon"]
 
-            if not pd.isnull(lat) and not pd.isnull(lng):
-                location = self.__get_city_country(str(location_id), lat, lng)
-            else:
-                location = ""
+        if not pd.isnull(lat) and not pd.isnull(lng):
+            location = self.__get_city_country(str(location_id), lat, lng)
+        else:
+            location = ""
 
-            del df["lat"]
-            del df["lon"]
-            df.loc[:, "location"] = location
-            print(f"Simplified {location_id}, {lat}, {lng} to {location}")
+        del df["lat"]
+        del df["lon"]
+        df.loc[:, "location"] = location
+        print(f"Simplified {location_id}, {lat}, {lng} to {location}")
 
     # Return a string with the format "city-country" based on the given latitude and longitude.
     def __get_city_country(self, location_id, lat, lng):
@@ -154,19 +157,18 @@ class Scraper:
 
     # Writing each dataframe to the final folder structure.
     @staticmethod
-    def __to_csv_helper(dataframes, folder_path):
-        for df in dataframes:
-            location = df.at[0, "location"]
+    def __to_csv_helper(df, folder_path):
+        location = df.at[0, "location"]
 
-            # TODO: Currently removing data that has no location, potentially change this after discussing it.
-            if location:
-                sensor_id = df.at[0, "sensor_id"]
-                date = df.at[0, "timestamp"][:10]
+        # TODO: Currently removing data that has no location, potentially change this after discussing it.
+        if location:
+            sensor_id = df.at[0, "sensor_id"]
+            date = df.at[0, "timestamp"][:10]
 
-                path = Path(f"{folder_path}/{location}/")
-                path.mkdir(parents=True, exist_ok=True)
+            path = Path(f"{folder_path}/{location}/")
+            path.mkdir(parents=True, exist_ok=True)
 
-                df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
+            df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
