@@ -38,19 +38,7 @@ class Scraper:
         dataframes = self.__read_csv_helper(file_urls)
         self.__simplify_location(dataframes)
 
-        # Writing each dataframe to the final folder structure.
-        for df in dataframes:
-            location = df.at[0, "location"]
-
-            # TODO: Currently removing data that has no location, potentially change this after discussing it.
-            if location:
-                sensor_id = df.at[0, "sensor_id"]
-                date = df.at[0, "timestamp"][:10]
-
-                path = Path(f"{folder_path}/{location}/")
-                path.mkdir(parents=True, exist_ok=True)
-
-                df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
+        self.__to_csv_helper(dataframes, folder_path)
 
         if self.create_statistics:
             SensorStatistics(dataframes, folder_path, self.measurements).create_statistics_file()
@@ -168,6 +156,22 @@ class Scraper:
         country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
 
         return f"{city}-{country}"
+
+    # Writing each dataframe to the final folder structure.
+    @staticmethod
+    def __to_csv_helper(dataframes, folder_path):
+        for df in dataframes:
+            location = df.at[0, "location"]
+
+            # TODO: Currently removing data that has no location, potentially change this after discussing it.
+            if location:
+                sensor_id = df.at[0, "sensor_id"]
+                date = df.at[0, "timestamp"][:10]
+
+                path = Path(f"{folder_path}/{location}/")
+                path.mkdir(parents=True, exist_ok=True)
+
+                df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
