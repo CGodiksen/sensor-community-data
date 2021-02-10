@@ -2,6 +2,7 @@ import json
 import time
 import requests
 import io
+import logging
 import pandas as pd
 
 from datetime import date, timedelta
@@ -65,14 +66,14 @@ class Scraper:
         file_urls = []
 
         for date_url in date_urls:
-            print(f"Retrieving file urls from {date_url}...")
+            logging.info(f"Retrieving file urls from {date_url}...")
             date_html = requests.get(date_url).text
             soup = BeautifulSoup(date_html, features="html.parser")
 
             file_urls.extend([f"{date_url}/{a['href']}" for a in soup.find_all('a', href=True)])
 
         file_urls = self.__remove_unwanted_files(file_urls)
-        print(f"Retrieved {len(file_urls)} file urls")
+        logging.info(f"Retrieved {len(file_urls)} file urls")
 
         return file_urls
 
@@ -104,7 +105,7 @@ class Scraper:
         return df
 
     def __read_csv_helper(self, file_url):
-        print(f"Converting {file_url} to a dataframe")
+        logging.info(f"Converting {file_url} to a dataframe")
 
         return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
 
@@ -122,7 +123,7 @@ class Scraper:
         del df["lat"]
         del df["lon"]
         df.loc[:, "location"] = location
-        print(f"Simplified {location_id}, {lat}, {lng} to {location}")
+        logging.info(f"Simplified {location_id}, {lat}, {lng} to {location}")
 
     # Return a string with the format "city-country" based on the given latitude and longitude.
     def __get_city_country(self, location_id, lat, lng):
@@ -138,7 +139,7 @@ class Scraper:
         return location
 
     def __reverse_geocode(self, lat, lng):
-        print(f"Reverse geocoding {lat}, {lng}")
+        logging.info(f"Reverse geocoding {lat}, {lng}")
         maps_api_url = "https://maps.googleapis.com/maps/api/geocode/json?"
         result_type = "&result_type=locality&result_type=political"
         key = f"&key={self.api_key}"
