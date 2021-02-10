@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from bs4 import BeautifulSoup
 from pathlib import Path
+from multiprocessing.dummy import Pool
 from sensor_statistics import SensorStatistics
 
 
@@ -16,7 +17,10 @@ from sensor_statistics import SensorStatistics
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
                  locations=None, measurements=None, remove_indoor=True, create_statistics=True):
+        # Columns that are constant for all files from sensor community.
+        self.common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
         self.url = "https://archive.sensor.community/"
+
         self.start_date = start_date
         self.end_date = end_date
         self.sensor_types = sensor_types
@@ -35,7 +39,8 @@ class Scraper:
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
-        dataframes = self.__read_csv_helper(file_urls)
+        dataframes = Pool().map(self.__read_csv_helper, file_urls)
+
         self.__simplify_location(dataframes)
 
         self.__to_csv_helper(dataframes, folder_path)
@@ -84,23 +89,10 @@ class Scraper:
 
         return file_urls
 
-    def __read_csv_helper(self, file_urls):
-        # Columns that are constant for all files from sensor community.
-        common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
+    def __read_csv_helper(self, file_url):
+        print(f"Converting {file_url} to a dataframe")
 
-        dataframes = []
-        for file_url in file_urls:
-            print(f"Turning {file_url} into a dataframe")
-
-            # Only reading the common columns and specified measurements if a list of measurements were given.
-            if self.measurements:
-                df = pd.read_csv(file_url, sep=";", usecols=common_columns + self.measurements)
-            else:
-                df = pd.read_csv(file_url, sep=";")
-
-            dataframes.append(df)
-
-        return dataframes
+        return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, dataframes):

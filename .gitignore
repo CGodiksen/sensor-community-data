@@ -161,3 +161,4 @@ pip-selfcheck.json
 .idea/vcs.xml
 data/
 /config.json
+.idea/workspace.xml
