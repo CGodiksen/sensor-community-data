@@ -114,18 +114,6 @@ class Scraper:
 
         return dataframes
 
-    # Removing columns from the given dataframes that are not needed based on the specified measurements list.
-    def __remove_excess_columns(self, dataframes):
-        print("Removing excess columns...")
-        if self.measurements:
-            columns_to_keep = common_columns + self.measurements
-
-            for df in dataframes:
-                columns_to_remove = [column for column in list(df) if column not in columns_to_keep]
-                for column in columns_to_remove:
-                    del df[column]
-        print("Finished removing excess columns")
-
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, dataframes):
         for df in dataframes:
