@@ -17,7 +17,7 @@ class SensorStatistics:
         logging.info("Creating statistics file...")
         statistics = {
             "time_frame": self.__get_time_frame(self.dataframes),
-            "sensor_count": self.__get_sensor_count(self.dataframes),
+            "sensor_count": self.__count_unique(self.dataframes, "sensor_id"),
             **self.__get_measurement_statistics(self.dataframes),
             "location_statistics": self.__get_location_statistics(self.dataframes)
         }
@@ -26,12 +26,12 @@ class SensorStatistics:
             json.dump(statistics, jsonfile)
 
     @staticmethod
-    def __get_sensor_count(dataframes):
-        sensors = []
+    def __count_unique(dataframes, column_name):
+        all_column = []
         for df in dataframes:
-            sensors.append(df.at[0, "sensor_id"])
+            all_column.append(df.at[0, column_name])
 
-        return len(list(set(sensors)))
+        return len(list(set(all_column)))
 
     @staticmethod
     def __get_time_frame(dataframes):
@@ -65,11 +65,13 @@ class SensorStatistics:
         # Split the data into cities.
         grouped_dataframes = self.__group_by_location(dataframes)
 
-        location_statistics = {}
+        location_statistics = {
+            "location_count": self.__count_unique(self.dataframes, "location")
+        }
         for location, location_dataframes in grouped_dataframes.items():
             location_statistics[location] = {
                 "time_frame": self.__get_time_frame(location_dataframes),
-                "sensor_count": self.__get_sensor_count(location_dataframes),
+                "sensor_count": self.__count_unique(location_dataframes, "sensor_id"),
                 **self.__get_measurement_statistics(location_dataframes),
             }
 
