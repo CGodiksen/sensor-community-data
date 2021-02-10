@@ -35,17 +35,8 @@ class Scraper:
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
-        print("Cleaning data...")
-
-        def read_csv_helper(file_url):
-            print(f"Turning {file_url} into a dataframe")
-            return pd.read_csv(file_url, sep=";")
-
-        dataframes = [read_csv_helper(file_url) for file_url in file_urls]
-        print("Turned csv files into dataframes")
-        self.__remove_excess_columns(dataframes)
+        dataframes = self.__read_csv_helper(file_urls)
         self.__simplify_location(dataframes)
-        print("Finished cleaning data")
 
         # Writing each dataframe to the final folder structure.
         for df in dataframes:
@@ -104,6 +95,17 @@ class Scraper:
             file_urls = list(filter(lambda file_url: "indoor" not in file_url, file_urls))
 
         return file_urls
+
+    @staticmethod
+    def __read_csv_helper(file_urls):
+        dataframes = []
+        for file_url in file_urls:
+            print(f"Turning {file_url} into a dataframe")
+
+            df = pd.read_csv(file_url, sep=";")
+            dataframes.append(df)
+
+        return dataframes
 
     # Removing columns from the given dataframes that are not needed based on the specified measurements list.
     def __remove_excess_columns(self, dataframes):
@@ -165,6 +167,7 @@ class Scraper:
 
         # Making a request to the Google Maps reverse geocoding API.
         api_response = requests.get(f"{maps_api_url}latlng={lat},{lng}{result_type}{key}").json()
+        # TODO: Handle problems that arise when api response is empty.
         address_comp = api_response["results"][0]["address_components"]
 
         # Extracting the city and country name by filtering on the address component type.
