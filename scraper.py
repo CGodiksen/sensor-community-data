@@ -17,7 +17,7 @@ from sensor_statistics import SensorStatistics
 # TODO: Data cleaning
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
-                 locations=None, measurements=None, remove_indoor=True, create_statistics=True):
+                 locations=None, measurements=None, remove_indoor=True, combine_city_data, create_statistics=True):
         # Columns that are constant for all files from sensor community.
         self.common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
         self.url = "https://archive.sensor.community/"
@@ -29,6 +29,7 @@ class Scraper:
         self.locations = locations
         self.measurements = measurements
         self.remove_indoor = remove_indoor
+        self.combine_city_data = combine_city_data
         self.create_statistics = create_statistics
 
         with open("location_cache.json", "r") as cachefile:
@@ -46,7 +47,8 @@ class Scraper:
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
-        dataframes = Pool().map(lambda file_url: self.__process_file(file_url, folder_path), file_urls)
+        dataframes = Pool().map(self.__process_file, file_urls)
+        self.__to_csv_helper(dataframes, folder_path)
 
         if self.create_statistics and dataframes:
             SensorStatistics(dataframes, folder_path, self.measurements).create_statistics_file()
@@ -97,10 +99,9 @@ class Scraper:
         return file_urls
 
     # Fully processing a single file, including reading it from the archive, cleaning the data and saving it to storage.
-    def __process_file(self, file_url, folder_path):
+    def __process_file(self, file_url):
         df = self.__read_csv_helper(file_url)
         self.__simplify_location(df)
-        self.__to_csv_helper(df, folder_path)
 
         return df
 
@@ -159,19 +160,22 @@ class Scraper:
             return ""
 
     # Writing each dataframe to the final folder structure.
-    @staticmethod
-    def __to_csv_helper(df, folder_path):
-        location = df.at[0, "location"]
+    def __to_csv_helper(self, dataframes, folder_path):
+        if self.combine_city_data:
+            pass
+        else:
+            for df in dataframes:
+                location = df.at[0, "location"]
 
-        # TODO: Currently removing data that has no location, potentially change this after discussing it.
-        if location:
-            sensor_id = df.at[0, "sensor_id"]
-            date = df.at[0, "timestamp"][:10]
+                # TODO: Currently removing data that has no location, potentially change this after discussing it.
+                if location:
+                    sensor_id = df.at[0, "sensor_id"]
+                    date = df.at[0, "timestamp"][:10]
 
-            path = Path(f"{folder_path}/{location}/")
-            path.mkdir(parents=True, exist_ok=True)
+                    path = Path(f"{folder_path}/{location}/")
+                    path.mkdir(parents=True, exist_ok=True)
 
-            df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
+                    df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
