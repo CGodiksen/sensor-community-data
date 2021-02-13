@@ -16,8 +16,7 @@ from sensor_statistics import SensorStatistics
 # TODO: If the used config matches an existing config file then don't download already downloaded files.
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
-                 locations=None, measurements=None, remove_indoor=True, combine_city_data=True, resample_freq=None,
-                 create_statistics=True):
+                 measurements=None, remove_indoor=True):
         # Columns that are constant for all files from sensor community.
         self.common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
         self.url = "https://archive.sensor.community/"
@@ -26,20 +25,8 @@ class Scraper:
         self.end_date = end_date
         self.sensor_types = sensor_types
         self.sensor_ids = sensor_ids
-        self.locations = locations
         self.measurements = measurements
         self.remove_indoor = remove_indoor
-        self.combine_city_data = combine_city_data
-        self.resample_freq = resample_freq
-        self.create_statistics = create_statistics
-
-        with open("location_cache.json", "r") as cachefile:
-            self.location_cache = json.load(cachefile)
-
-        with open("config.json", "r") as configfile:
-            self.api_key = json.load(configfile)['maps_api_key']
-
-        self.start()
 
     def start(self):
         folder_name = self.__save_data_settings()

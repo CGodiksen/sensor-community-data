@@ -162,3 +162,4 @@ pip-selfcheck.json
 data/
 /config.json
 .idea/workspace.xml
+.idea/sensor-community-data.iml
