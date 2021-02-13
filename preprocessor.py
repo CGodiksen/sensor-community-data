@@ -6,6 +6,8 @@ import logging
 import utility
 import pandas as pd
 
+from pathlib import Path
+
 
 # TODO: Data cleaning
 class Preprocessor:
@@ -27,18 +29,24 @@ class Preprocessor:
     # Parse through all csv files in the given data folder and load them into dataframes.
     @staticmethod
     def __get_dataframes(data_folder):
-        date_folders = [date_folder for date_folder in os.listdir(data_folder) if os.path.isdir(date_folder)]
+        dataframes = []
+        for data_file in Path(data_folder).rglob("*.csv"):
+            df = pd.read_csv(data_file)
 
-        data_files = []
-        for date_folder in date_folders:
-            data_files.extend(os.listdir(date_folder))
+            sensor_id, sensor_type = data_file.stem.split("_")
+            df.attrs["sensor_id"] = sensor_id
+            df.attrs["sensor_type"] = sensor_type
 
-        return [pd.read_csv(date_file) for date_file in data_files]
+            dataframes.append(df)
+
+        return dataframes
 
     # Mutating the data in various ways to make the data easier to use later.
-    def start(self, df):
-        self.__simplify_location(df)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
+    def start(self):
+        # Doing preprocessing that should be applied to each dataframe individually.
+        for df in self.dataframes:
+            self.__simplify_location(df)
+            df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, df):
@@ -101,3 +109,6 @@ class Preprocessor:
 
                 if self.resample_freq:
                     df = df.resample("T", on="timestamp").mean()
+
+
+test = Preprocessor("data/1613254750/")
