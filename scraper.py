@@ -105,23 +105,6 @@ class Scraper:
 
         return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
 
-    # Writing each dataframe to the final folder structure.
-    def __dataframes_to_csv(self, dataframes, folder_name):
-        if self.combine_city_data:
-            grouped_dataframes = utility.group_by_location(dataframes)
-
-            for location, dataframes in grouped_dataframes.items():
-                df = pd.concat(dataframes, ignore_index=True)
-                df.sort_values("timestamp", inplace=True)
-
-                if self.resample_freq:
-                    df = df.resample("T", on="timestamp").mean()
-
-                self.__to_csv_helper(df, folder_name)
-        else:
-            for df in dataframes:
-                self.__to_csv_helper(df, folder_name)
-
     def __to_csv_helper(self, df, folder_name):
         location = df.at[0, "location"]
 

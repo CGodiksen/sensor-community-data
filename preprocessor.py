@@ -1,6 +1,7 @@
 import json
 import requests
 import logging
+import utility
 import pandas as pd
 
 
@@ -73,3 +74,16 @@ class Preprocessor:
             return f"{city}-{country}"
         except IndexError:
             return ""
+
+    # TODO: Change this heavily
+    # Writing each dataframe to the final folder structure.
+    def __dataframes_to_csv(self, dataframes):
+        if self.combine_city_data:
+            grouped_dataframes = utility.group_by_location(dataframes)
+
+            for location, dataframes in grouped_dataframes.items():
+                df = pd.concat(dataframes, ignore_index=True)
+                df.sort_values("timestamp", inplace=True)
+
+                if self.resample_freq:
+                    df = df.resample("T", on="timestamp").mean()
