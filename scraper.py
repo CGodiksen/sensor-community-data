@@ -35,8 +35,7 @@ class Scraper:
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
-        dataframes = Pool().map(self.__process_file, file_urls)
-        self.__dataframes_to_csv(dataframes, folder_name)
+        Pool().map(lambda file_url: self.__process_file(file_url, folder_name), file_urls)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
@@ -94,31 +93,27 @@ class Scraper:
         return file_urls
 
     # Fully processing a single file, including reading it from the archive, cleaning the data and saving it to storage.
-    def __process_file(self, file_url):
+    def __process_file(self, file_url, folder_name):
         df = self.__read_csv_helper(file_url)
-        self.__mutate_data(df)
-
-        return df
+        self.__to_csv_helper(df, folder_name)
 
     def __read_csv_helper(self, file_url):
         logging.info(f"Converting {file_url} to a dataframe")
 
         return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
 
-    def __to_csv_helper(self, df, folder_name):
+    @staticmethod
+    def __to_csv_helper(df, folder_name):
         location = df.at[0, "location"]
 
         # Removing data that has no location.
         if location:
-            if self.combine_city_data:
-                file_path = f"data/{folder_name}/{location}.csv"
-            else:
-                sensor_id = df.at[0, "sensor_id"]
-                date_str = str(df.at[0, "timestamp"].date())
+            sensor_id = df.at[0, "sensor_id"]
+            date_str = str(df.at[0, "timestamp"].date())
 
-                path = Path(f"data/{folder_name}/{location}/")
-                path.mkdir(parents=True, exist_ok=True)
+            path = Path(f"data/{folder_name}/{location}/")
+            path.mkdir(parents=True, exist_ok=True)
 
-                file_path = f"{path.as_posix()}/{sensor_id}_{date_str}.csv"
+            file_path = f"{path.as_posix()}/{sensor_id}_{date_str}.csv"
 
             df.to_csv(file_path, index=False)
