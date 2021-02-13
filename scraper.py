@@ -166,7 +166,9 @@ class Scraper:
 
             for location, dataframes in grouped_dataframes.items():
                 df = pd.concat(dataframes, ignore_index=True)
-                df.sort_values("timestamp")
+                df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
+                df.sort_values("timestamp", inplace=True)
+
                 self.__to_csv_helper(df, folder_path)
         else:
             for df in dataframes:
@@ -179,12 +181,12 @@ class Scraper:
         # Removing data that has no location.
         if location:
             sensor_id = df.at[0, "sensor_id"]
-            data_date = df.at[0, "timestamp"][:10]
+            date_str = str(df.at[0, "timestamp"].date())
 
             path = Path(f"{folder_path}/{location}/")
             path.mkdir(parents=True, exist_ok=True)
 
-            df.to_csv(f"{folder_path}/{location}/{sensor_id}_{data_date}.csv", index=False)
+            df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date_str}.csv", index=False)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
