@@ -12,17 +12,15 @@ from bs4 import BeautifulSoup
 
 # TODO: If the used config matches an existing config file then don't download already downloaded files.
 class Scraper:
-    def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
-                 measurements=None, remove_indoor=True):
-        # Columns that are constant for all files from sensor community.
-        self.common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
+    def __init__(self, measurements, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None,
+                 sensor_ids=None, remove_indoor=True):
+        self.columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
 
         self.start_date = start_date
         self.end_date = end_date
         self.sensor_types = sensor_types
         self.sensor_ids = sensor_ids
-        self.measurements = measurements
         self.remove_indoor = remove_indoor
 
     def start(self):
@@ -96,7 +94,7 @@ class Scraper:
     def __read_csv_helper(self, file_url):
         logging.info(f"Converting {file_url} to a dataframe")
 
-        return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
+        return pd.read_csv(file_url, sep=";", usecols=self.columns)
 
     def __to_csv_helper(self, df, folder_path):
         sensor_id = df.at[0, "sensor_id"]
@@ -106,5 +104,5 @@ class Scraper:
         path = Path(f"{folder_path}/{date_str}/")
         path.mkdir(parents=True, exist_ok=True)
 
-        remaining_columns = ["location", "lat", "lon", "timestamp"] + self.measurements
+        remaining_columns = [x for x in self.columns if x not in ["sensor_id", "sensor_type"]]
         df.to_csv(f"{path.as_posix()}/{sensor_id}_{sensor_type}.csv", index=False, columns=remaining_columns)
