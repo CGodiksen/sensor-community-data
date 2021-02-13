@@ -178,19 +178,23 @@ class Scraper:
             for df in dataframes:
                 self.__to_csv_helper(df, folder_path)
 
-    @staticmethod
-    def __to_csv_helper(df, folder_path):
+    def __to_csv_helper(self, df, folder_path):
         location = df.at[0, "location"]
 
         # Removing data that has no location.
         if location:
-            sensor_id = df.at[0, "sensor_id"]
-            date_str = str(df.at[0, "timestamp"].date())
+            if self.combine_city_data:
+                file_path = f"{folder_path}/{location}.csv"
+            else:
+                sensor_id = df.at[0, "sensor_id"]
+                date_str = str(df.at[0, "timestamp"].date())
 
-            path = Path(f"{folder_path}/{location}/")
-            path.mkdir(parents=True, exist_ok=True)
+                path = Path(f"{folder_path}/{location}/")
+                path.mkdir(parents=True, exist_ok=True)
 
-            df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date_str}.csv", index=False)
+                file_path = f"{path.as_posix()}/{sensor_id}_{date_str}.csv"
+
+            df.to_csv(file_path, index=False)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
