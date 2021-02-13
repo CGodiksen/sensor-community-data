@@ -7,9 +7,9 @@ import utility
 
 
 class SensorStatistics:
-    def __init__(self, dataframes, save_path, measurements):
+    def __init__(self, dataframes, save_folder, measurements):
         self.dataframes = dataframes
-        self.save_path = save_path
+        self.save_folder = save_folder
         self.measurements = measurements
 
     # Create a JSON file with statistics about the data in the given dataframes.
@@ -24,7 +24,7 @@ class SensorStatistics:
             "location_statistics": self.__get_location_statistics(self.dataframes)
         }
 
-        with open(f"{self.save_path}/statistics.json", "w+") as jsonfile:
+        with open(f"data/{self.save_folder}/metadata/statistics.json", "w+") as jsonfile:
             json.dump(statistics, jsonfile)
 
     @staticmethod

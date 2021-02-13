@@ -41,17 +41,17 @@ class Scraper:
         self.start()
 
     def start(self):
-        folder_path = self.__save_data_settings()
+        folder_name = self.__save_data_settings()
 
         # Retrieving the data from the online archive.
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
         dataframes = Pool().map(self.__process_file, file_urls)
-        self.__dataframes_to_csv(dataframes, folder_path)
+        self.__dataframes_to_csv(dataframes, folder_name)
 
         if self.create_statistics and dataframes:
-            SensorStatistics(dataframes, folder_path, self.measurements).create_statistics_file()
+            SensorStatistics(dataframes, folder_name, self.measurements).create_statistics_file()
 
         # Saving the potentially changed cache to persistent storage.
         with open("location_cache.json", "w") as cachefile:
@@ -165,7 +165,7 @@ class Scraper:
             return ""
 
     # Writing each dataframe to the final folder structure.
-    def __dataframes_to_csv(self, dataframes, folder_path):
+    def __dataframes_to_csv(self, dataframes, folder_name):
         if self.combine_city_data:
             grouped_dataframes = utility.group_by_location(dataframes)
 
@@ -173,23 +173,23 @@ class Scraper:
                 df = pd.concat(dataframes, ignore_index=True)
                 df.sort_values("timestamp", inplace=True)
 
-                self.__to_csv_helper(df, folder_path)
+                self.__to_csv_helper(df, folder_name)
         else:
             for df in dataframes:
-                self.__to_csv_helper(df, folder_path)
+                self.__to_csv_helper(df, folder_name)
 
-    def __to_csv_helper(self, df, folder_path):
+    def __to_csv_helper(self, df, folder_name):
         location = df.at[0, "location"]
 
         # Removing data that has no location.
         if location:
             if self.combine_city_data:
-                file_path = f"{folder_path}/{location}.csv"
+                file_path = f"data/{folder_name}/{location}.csv"
             else:
                 sensor_id = df.at[0, "sensor_id"]
                 date_str = str(df.at[0, "timestamp"].date())
 
-                path = Path(f"{folder_path}/{location}/")
+                path = Path(f"data/{folder_name}/{location}/")
                 path.mkdir(parents=True, exist_ok=True)
 
                 file_path = f"{path.as_posix()}/{sensor_id}_{date_str}.csv"
@@ -198,7 +198,8 @@ class Scraper:
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
-        path = Path(f"data/{int(time.time())}/")
+        unique_name = str(int(time.time()))
+        path = Path(f"data/{unique_name}/metadata/")
         path.mkdir(parents=True, exist_ok=True)
 
         with open(path.joinpath("settings.json"), "w+") as jsonfile:
@@ -207,4 +208,4 @@ class Scraper:
 
             json.dump(settings, jsonfile, default=str)
 
-        return path
+        return unique_name
