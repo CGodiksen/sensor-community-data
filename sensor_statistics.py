@@ -1,7 +1,9 @@
-import collections
 import json
 import logging
+
 import pandas as pd
+
+import utility
 
 
 class SensorStatistics:
@@ -63,7 +65,7 @@ class SensorStatistics:
 
     def __get_location_statistics(self, dataframes):
         # Split the data into cities.
-        grouped_dataframes = self.__group_by_location(dataframes)
+        grouped_dataframes = utility.group_by_location(dataframes)
 
         location_statistics = {
             "location_count": self.__count_unique(self.dataframes, "location")
@@ -76,13 +78,3 @@ class SensorStatistics:
             }
 
         return location_statistics
-
-    # Return a dictionary from locations to dataframes related to the specific locations.
-    @staticmethod
-    def __group_by_location(dataframes):
-        grouped_dataframes = collections.defaultdict(list)
-
-        for df in dataframes:
-            grouped_dataframes[df.at[0, "location"]].append(df)
-
-        return grouped_dataframes

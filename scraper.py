@@ -1,15 +1,14 @@
 import json
-import time
-import requests
-import io
 import logging
-import pandas as pd
-
+import time
 from datetime import date, timedelta
-from pathlib import Path
-from bs4 import BeautifulSoup
-from pathlib import Path
 from multiprocessing.dummy import Pool
+from pathlib import Path
+
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
 from sensor_statistics import SensorStatistics
 
 
@@ -17,7 +16,7 @@ from sensor_statistics import SensorStatistics
 # TODO: Data cleaning
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
-                 locations=None, measurements=None, remove_indoor=True, combine_city_data, create_statistics=True):
+                 locations=None, measurements=None, remove_indoor=True, combine_city_data=True, create_statistics=True):
         # Columns that are constant for all files from sensor community.
         self.common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
         self.url = "https://archive.sensor.community/"
