@@ -1,4 +1,6 @@
 import json
+import os
+
 import requests
 import logging
 import utility
@@ -7,9 +9,10 @@ import pandas as pd
 
 # TODO: Data cleaning
 class Preprocessor:
-    def __init__(self, combine_city_data=False, resample_freq=None):
+    def __init__(self, data_folder, combine_city_data=False, resample_freq=None):
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
+        self.dataframes = self.__get_dataframes(data_folder)
 
         with open("location_cache.json", "r") as cachefile:
             self.location_cache = json.load(cachefile)
@@ -21,8 +24,19 @@ class Preprocessor:
         with open("location_cache.json", "w") as cachefile:
             json.dump(self.location_cache, cachefile)
 
+    # Parse through all csv files in the given data folder and load them into dataframes.
+    @staticmethod
+    def __get_dataframes(data_folder):
+        date_folders = [date_folder for date_folder in os.listdir(data_folder) if os.path.isdir(date_folder)]
+
+        data_files = []
+        for date_folder in date_folders:
+            data_files.extend(os.listdir(date_folder))
+
+        return [pd.read_csv(date_file) for date_file in data_files]
+
     # Mutating the data in various ways to make the data easier to use later.
-    def __mutate_data(self, df):
+    def start(self, df):
         self.__simplify_location(df)
         df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
 
