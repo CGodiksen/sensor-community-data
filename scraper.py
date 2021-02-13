@@ -14,7 +14,6 @@ from sensor_statistics import SensorStatistics
 
 
 # TODO: If the used config matches an existing config file then don't download already downloaded files.
-# TODO: Data cleaning
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
                  locations=None, measurements=None, remove_indoor=True, combine_city_data=True, resample_freq=None,
