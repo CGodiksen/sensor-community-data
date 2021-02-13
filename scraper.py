@@ -101,7 +101,7 @@ class Scraper:
     # Fully processing a single file, including reading it from the archive, cleaning the data and saving it to storage.
     def __process_file(self, file_url):
         df = self.__read_csv_helper(file_url)
-        self.__simplify_location(df)
+        self.__clean_data(df)
 
         return df
 
@@ -109,6 +109,11 @@ class Scraper:
         logging.info(f"Converting {file_url} to a dataframe")
 
         return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
+
+    # Mutating the data in various ways to make the data easier to use later.
+    def __clean_data(self, df):
+        self.__simplify_location(df)
+        df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, df):
@@ -166,7 +171,6 @@ class Scraper:
 
             for location, dataframes in grouped_dataframes.items():
                 df = pd.concat(dataframes, ignore_index=True)
-                df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
                 df.sort_values("timestamp", inplace=True)
 
                 self.__to_csv_helper(df, folder_path)
