@@ -12,15 +12,15 @@ class SensorStatistics:
         self.save_path = save_path
         self.measurements = measurements
 
-        self.__get_measurement_statistics(dataframes)
-
     # Create a JSON file with statistics about the data in the given dataframes.
     def create_statistics_file(self):
         logging.info("Creating statistics file...")
+        total_dataframe = pd.concat(self.dataframes, ignore_index=True)
+
         statistics = {
-            "time_frame": self.__get_time_frame(self.dataframes),
+            "time_frame": self.__get_time_frame(total_dataframe),
             "sensor_count": self.__count_unique(self.dataframes, "sensor_id"),
-            **self.__get_measurement_statistics(self.dataframes),
+            **self.__get_measurement_statistics(total_dataframe),
             "location_statistics": self.__get_location_statistics(self.dataframes)
         }
 
@@ -36,24 +36,17 @@ class SensorStatistics:
         return len(list(set(all_column)))
 
     @staticmethod
-    def __get_time_frame(dataframes):
-        earliest_date = dataframes[0].at[0, "timestamp"][:10]
-        latest_date = ""
+    def __get_time_frame(total_dataframe):
+        total_dataframe.sort_values("timestamp", inplace=True)
 
-        for df in dataframes:
-            date = df.at[0, "timestamp"][:10]
-
-            if date < earliest_date:
-                earliest_date = date
-            elif date > latest_date:
-                latest_date = date
+        earliest_date = total_dataframe["timestamp"].iloc[0].date()
+        latest_date = total_dataframe["timestamp"].iloc[-1].date()
 
         return f"{earliest_date} - {latest_date}"
 
     # Return a dictionary with a key for each measurement. The value is a dict of statistics about the key measurement.
-    def __get_measurement_statistics(self, dataframes):
+    def __get_measurement_statistics(self, total_dataframe):
         measurement_statistics = {}
-        total_dataframe = pd.concat(dataframes)
 
         description = total_dataframe.describe()
         statistic_names = list(description.index)
@@ -71,10 +64,12 @@ class SensorStatistics:
             "location_count": self.__count_unique(self.dataframes, "location")
         }
         for location, location_dataframes in grouped_dataframes.items():
+            total_dataframe = pd.concat(location_dataframes, ignore_index=True)
+
             location_statistics[location] = {
-                "time_frame": self.__get_time_frame(location_dataframes),
+                "time_frame": self.__get_time_frame(total_dataframe),
                 "sensor_count": self.__count_unique(location_dataframes, "sensor_id"),
-                **self.__get_measurement_statistics(location_dataframes),
+                **self.__get_measurement_statistics(total_dataframe),
             }
 
         return location_statistics
