@@ -48,7 +48,7 @@ class Scraper:
         file_urls = self.__get_file_urls(date_urls)
 
         dataframes = Pool().map(self.__process_file, file_urls)
-        self.__to_csv_helper(dataframes, folder_path)
+        self.__dataframes_to_csv(dataframes, folder_path)
 
         if self.create_statistics and dataframes:
             SensorStatistics(dataframes, folder_path, self.measurements).create_statistics_file()
@@ -160,28 +160,31 @@ class Scraper:
             return ""
 
     # Writing each dataframe to the final folder structure.
-    def __to_csv_helper(self, dataframes, folder_path):
+    def __dataframes_to_csv(self, dataframes, folder_path):
         if self.combine_city_data:
             grouped_dataframes = utility.group_by_location(dataframes)
 
             for location, dataframes in grouped_dataframes.items():
                 df = pd.concat(dataframes)
                 df.sort_values("timestamp")
-
-                
+                self.__to_csv_helper(df, folder_path)
         else:
             for df in dataframes:
-                location = df.at[0, "location"]
+                self.__to_csv_helper(df, folder_path)
 
-                # TODO: Currently removing data that has no location, potentially change this after discussing it.
-                if location:
-                    sensor_id = df.at[0, "sensor_id"]
-                    date = df.at[0, "timestamp"][:10]
+    @staticmethod
+    def __to_csv_helper(df, folder_path):
+        location = df.at[0, "location"]
 
-                    path = Path(f"{folder_path}/{location}/")
-                    path.mkdir(parents=True, exist_ok=True)
+        # TODO: Currently removing data that has no location, potentially change this after discussing it.
+        if location:
+            sensor_id = df.at[0, "sensor_id"]
+            data_date = df.at[0, "timestamp"][:10]
 
-                    df.to_csv(f"{folder_path}/{location}/{sensor_id}_{date}.csv", index=False)
+            path = Path(f"{folder_path}/{location}/")
+            path.mkdir(parents=True, exist_ok=True)
+
+            df.to_csv(f"{folder_path}/{location}/{sensor_id}_{data_date}.csv", index=False)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_data_settings(self):
