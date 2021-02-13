@@ -5,5 +5,6 @@ from scraper import Scraper
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    test = Scraper(start_date=date(2017, 1, 1), end_date=date(2017, 1, 1), measurements=["P1", "P2"],
-                   sensor_types=["sds011"], resample_freq="T")
+    scraper = Scraper(start_date=date(2017, 1, 1), end_date=date(2017, 1, 1), measurements=["P1", "P2"],
+                      sensor_types=["sds011"])
+    scraper.start()

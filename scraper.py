@@ -108,16 +108,11 @@ class Scraper:
 
     @staticmethod
     def __to_csv_helper(df, folder_name):
-        location = df.at[0, "location"]
+        date_str = df.at[0, "timestamp"][:10]
 
-        # Removing data that has no location.
-        if location:
-            sensor_id = df.at[0, "sensor_id"]
-            date_str = df.at[0, "timestamp"][:10]
+        path = Path(f"data/{folder_name}/{date_str}/")
+        path.mkdir(parents=True, exist_ok=True)
 
-            path = Path(f"data/{folder_name}/{location}/")
-            path.mkdir(parents=True, exist_ok=True)
+        file_path = f"{path.as_posix()}/{df.attrs['sensor_id']}_{df.attrs['sensor_type']}.csv"
 
-            file_path = f"{path.as_posix()}/{sensor_id}_{date_str}.csv"
-
-            df.to_csv(file_path, index=False)
+        df.to_csv(file_path, index=False)
