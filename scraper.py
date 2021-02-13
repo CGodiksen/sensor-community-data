@@ -9,9 +9,6 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-import utility
-from sensor_statistics import SensorStatistics
-
 
 # TODO: If the used config matches an existing config file then don't download already downloaded files.
 class Scraper:
@@ -31,7 +28,7 @@ class Scraper:
     def start(self):
         folder_name = self.__save_scrape_settings()
 
-        # Retrieving the data from the online archive.
+        # Retrieving the urls containing the wanted data in the online archive.
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
@@ -92,7 +89,7 @@ class Scraper:
 
         return file_urls
 
-    # Fully processing a single file, including reading it from the archive, cleaning the data and saving it to storage.
+    # Fully processing a single file, which involves downloading it from the archive and saving it locally.
     def __process_file(self, file_url, folder_name):
         df = self.__read_csv_helper(file_url)
         self.__to_csv_helper(df, folder_name)
@@ -109,7 +106,7 @@ class Scraper:
         # Removing data that has no location.
         if location:
             sensor_id = df.at[0, "sensor_id"]
-            date_str = str(df.at[0, "timestamp"].date())
+            date_str = df.at[0, "timestamp"][:10]
 
             path = Path(f"data/{folder_name}/{location}/")
             path.mkdir(parents=True, exist_ok=True)
