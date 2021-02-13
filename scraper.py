@@ -165,7 +165,7 @@ class Scraper:
             grouped_dataframes = utility.group_by_location(dataframes)
 
             for location, dataframes in grouped_dataframes.items():
-                df = pd.concat(dataframes)
+                df = pd.concat(dataframes, ignore_index=True)
                 df.sort_values("timestamp")
                 self.__to_csv_helper(df, folder_path)
         else:
@@ -176,7 +176,7 @@ class Scraper:
     def __to_csv_helper(df, folder_path):
         location = df.at[0, "location"]
 
-        # TODO: Currently removing data that has no location, potentially change this after discussing it.
+        # Removing data that has no location.
         if location:
             sensor_id = df.at[0, "sensor_id"]
             data_date = df.at[0, "timestamp"][:10]
