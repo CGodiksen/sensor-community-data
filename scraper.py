@@ -9,6 +9,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
+import utility
 from sensor_statistics import SensorStatistics
 
 
@@ -161,7 +162,13 @@ class Scraper:
     # Writing each dataframe to the final folder structure.
     def __to_csv_helper(self, dataframes, folder_path):
         if self.combine_city_data:
-            pass
+            grouped_dataframes = utility.group_by_location(dataframes)
+
+            for location, dataframes in grouped_dataframes.items():
+                df = pd.concat(dataframes)
+                df.sort_values("timestamp")
+
+                
         else:
             for df in dataframes:
                 location = df.at[0, "location"]
