@@ -89,9 +89,16 @@ class Scraper:
 
         return file_urls
 
-    # Fully processing a single file, which involves downloading it from the archive and saving it locally.
+    # Fully processing a single file, which involves downloading it, modifying it slightly and saving it locally.
     def __process_file(self, file_url, folder_name):
         df = self.__read_csv_helper(file_url)
+
+        # Saving single-valued columns as attributes on the dataframe and removing them to save space.
+        df.attrs["sensor_id"] = df.at[0, "sensor_id"]
+        df.attrs["sensor_type"] = df.at[0, "sensor_type"]
+        del df["sensor_id"]
+        del df["sensor_type"]
+
         self.__to_csv_helper(df, folder_name)
 
     def __read_csv_helper(self, file_url):
