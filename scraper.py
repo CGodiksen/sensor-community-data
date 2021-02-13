@@ -17,7 +17,8 @@ from sensor_statistics import SensorStatistics
 # TODO: Data cleaning
 class Scraper:
     def __init__(self, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None, sensor_ids=None,
-                 locations=None, measurements=None, remove_indoor=True, combine_city_data=True, create_statistics=True):
+                 locations=None, measurements=None, remove_indoor=True, combine_city_data=True, resample_freq=None,
+                 create_statistics=True):
         # Columns that are constant for all files from sensor community.
         self.common_columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"]
         self.url = "https://archive.sensor.community/"
@@ -30,6 +31,7 @@ class Scraper:
         self.measurements = measurements
         self.remove_indoor = remove_indoor
         self.combine_city_data = combine_city_data
+        self.resample_freq = resample_freq
         self.create_statistics = create_statistics
 
         with open("location_cache.json", "r") as cachefile:
@@ -101,7 +103,7 @@ class Scraper:
     # Fully processing a single file, including reading it from the archive, cleaning the data and saving it to storage.
     def __process_file(self, file_url):
         df = self.__read_csv_helper(file_url)
-        self.__clean_data(df)
+        self.__mutate_data(df)
 
         return df
 
@@ -111,7 +113,7 @@ class Scraper:
         return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
 
     # Mutating the data in various ways to make the data easier to use later.
-    def __clean_data(self, df):
+    def __mutate_data(self, df):
         self.__simplify_location(df)
         df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
 
@@ -172,6 +174,9 @@ class Scraper:
             for location, dataframes in grouped_dataframes.items():
                 df = pd.concat(dataframes, ignore_index=True)
                 df.sort_values("timestamp", inplace=True)
+
+                if self.resample_freq:
+                    df = df.resample("T", on="timestamp").mean()
 
                 self.__to_csv_helper(df, folder_name)
         else:
