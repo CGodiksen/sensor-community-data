@@ -26,18 +26,17 @@ class Scraper:
         self.remove_indoor = remove_indoor
 
     def start(self):
-        folder_name = self.__save_scrape_settings()
+        folder_path = self.__save_scrape_settings()
 
         # Retrieving the urls containing the wanted data in the online archive.
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
-        Pool().map(lambda file_url: self.__process_file(file_url, folder_name), file_urls)
+        Pool().map(lambda file_url: self.__process_file(file_url, folder_path), file_urls)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
-        unique_name = str(int(time.time()))
-        path = Path(f"data/{unique_name}/metadata/")
+        path = Path(f"data/{int(time.time())}/")
         path.mkdir(parents=True, exist_ok=True)
 
         with open(path.joinpath("settings.json"), "w+") as jsonfile:
@@ -46,7 +45,7 @@ class Scraper:
 
             json.dump(settings, jsonfile, default=str)
 
-        return unique_name
+        return path.as_posix()
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):
@@ -90,7 +89,7 @@ class Scraper:
         return file_urls
 
     # Fully processing a single file, which involves downloading it, modifying it slightly and saving it locally.
-    def __process_file(self, file_url, folder_name):
+    def __process_file(self, file_url, folder_path):
         df = self.__read_csv_helper(file_url)
 
         # Saving single-valued columns as attributes on the dataframe and removing them to save space.
@@ -99,7 +98,7 @@ class Scraper:
         del df["sensor_id"]
         del df["sensor_type"]
 
-        self.__to_csv_helper(df, folder_name)
+        self.__to_csv_helper(df, folder_path)
 
     def __read_csv_helper(self, file_url):
         logging.info(f"Converting {file_url} to a dataframe")
@@ -107,12 +106,10 @@ class Scraper:
         return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
 
     @staticmethod
-    def __to_csv_helper(df, folder_name):
+    def __to_csv_helper(df, folder_path):
         date_str = df.at[0, "timestamp"][:10]
 
-        path = Path(f"data/{folder_name}/{date_str}/")
+        path = Path(f"{folder_path}/{date_str}/")
         path.mkdir(parents=True, exist_ok=True)
 
-        file_path = f"{path.as_posix()}/{df.attrs['sensor_id']}_{df.attrs['sensor_type']}.csv"
-
-        df.to_csv(file_path, index=False)
+        df.to_csv(f"{path.as_posix()}/{df.attrs['sensor_id']}_{df.attrs['sensor_type']}.csv", index=False)
