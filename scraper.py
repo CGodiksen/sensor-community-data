@@ -38,13 +38,6 @@ class Scraper:
         dataframes = Pool().map(self.__process_file, file_urls)
         self.__dataframes_to_csv(dataframes, folder_name)
 
-        if self.create_statistics and dataframes:
-            SensorStatistics(dataframes, folder_name, self.measurements).create_statistics_file()
-
-        # Saving the potentially changed cache to persistent storage.
-        with open("location_cache.json", "w") as cachefile:
-            json.dump(self.location_cache, cachefile)
-
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
         unique_name = str(int(time.time()))

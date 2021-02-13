@@ -12,3 +12,7 @@ class Preprocessor:
 
         with open("config.json", "r") as configfile:
             self.api_key = json.load(configfile)['maps_api_key']
+
+        # Saving the potentially changed cache to persistent storage.
+        with open("location_cache.json", "w") as cachefile:
+            json.dump(self.location_cache, cachefile)
