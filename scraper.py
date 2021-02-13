@@ -29,7 +29,7 @@ class Scraper:
         self.remove_indoor = remove_indoor
 
     def start(self):
-        folder_name = self.__save_data_settings()
+        folder_name = self.__save_scrape_settings()
 
         # Retrieving the data from the online archive.
         date_urls = self.__get_date_urls()
@@ -44,6 +44,20 @@ class Scraper:
         # Saving the potentially changed cache to persistent storage.
         with open("location_cache.json", "w") as cachefile:
             json.dump(self.location_cache, cachefile)
+
+    # Creating a settings file specifying which settings are used for data retrieval.
+    def __save_scrape_settings(self):
+        unique_name = str(int(time.time()))
+        path = Path(f"data/{unique_name}/metadata/")
+        path.mkdir(parents=True, exist_ok=True)
+
+        with open(path.joinpath("settings.json"), "w+") as jsonfile:
+            settings = self.__dict__.copy()
+            del settings["url"]
+
+            json.dump(settings, jsonfile, default=str)
+
+        return unique_name
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):
@@ -186,17 +200,3 @@ class Scraper:
                 file_path = f"{path.as_posix()}/{sensor_id}_{date_str}.csv"
 
             df.to_csv(file_path, index=False)
-
-    # Creating a settings file specifying which settings are used for data retrieval.
-    def __save_data_settings(self):
-        unique_name = str(int(time.time()))
-        path = Path(f"data/{unique_name}/metadata/")
-        path.mkdir(parents=True, exist_ok=True)
-
-        with open(path.joinpath("settings.json"), "w+") as jsonfile:
-            settings = self.__dict__.copy()
-            del settings["url"]
-
-            json.dump(settings, jsonfile, default=str)
-
-        return unique_name
