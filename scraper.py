@@ -91,13 +91,6 @@ class Scraper:
     # Fully processing a single file, which involves downloading it, modifying it slightly and saving it locally.
     def __process_file(self, file_url, folder_path):
         df = self.__read_csv_helper(file_url)
-
-        # Saving single-valued columns as attributes on the dataframe and removing them to save space.
-        df.attrs["sensor_id"] = df.at[0, "sensor_id"]
-        df.attrs["sensor_type"] = df.at[0, "sensor_type"]
-        del df["sensor_id"]
-        del df["sensor_type"]
-
         self.__to_csv_helper(df, folder_path)
 
     def __read_csv_helper(self, file_url):
@@ -105,11 +98,13 @@ class Scraper:
 
         return pd.read_csv(file_url, sep=";", usecols=self.common_columns + self.measurements)
 
-    @staticmethod
-    def __to_csv_helper(df, folder_path):
+    def __to_csv_helper(self, df, folder_path):
+        sensor_id = df.at[0, "sensor_id"]
+        sensor_type = df.at[0, "sensor_type"]
         date_str = df.at[0, "timestamp"][:10]
 
         path = Path(f"{folder_path}/{date_str}/")
         path.mkdir(parents=True, exist_ok=True)
 
-        df.to_csv(f"{path.as_posix()}/{df.attrs['sensor_id']}_{df.attrs['sensor_type']}.csv", index=False)
+        remaining_columns = ["location", "lat", "lon", "timestamp"] + self.measurements
+        df.to_csv(f"{path.as_posix()}/{sensor_id}_{sensor_type}.csv", index=False, columns=remaining_columns)
