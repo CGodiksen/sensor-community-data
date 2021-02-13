@@ -89,7 +89,11 @@ class Scraper:
     # Fully processing a single file, which involves downloading it, modifying it slightly and saving it locally.
     def __process_file(self, file_url, folder_path):
         df = self.__read_csv_helper(file_url)
-        self.__to_csv_helper(df, folder_path)
+        df.dropna(inplace=True)
+
+        # The dataframe will be empty if at least one value was missing in each row.
+        if not df.empty:
+            self.__to_csv_helper(df, folder_path)
 
     def __read_csv_helper(self, file_url):
         logging.info(f"Converting {file_url} to a dataframe")
