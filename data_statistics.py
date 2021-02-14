@@ -7,10 +7,10 @@ import utility
 
 
 class DataStatistics:
-    def __init__(self, dataframes, save_folder, measurements):
-        self.dataframes = dataframes
-        self.save_folder = save_folder
+    def __init__(self, data_folder, measurements):
+        self.data_folder = data_folder
         self.measurements = measurements
+        self.dataframes = utility.get_dataframes(data_folder)
 
     # Create a JSON file with statistics about the data in the given dataframes.
     def create_statistics_file(self):
@@ -19,21 +19,12 @@ class DataStatistics:
 
         statistics = {
             "time_frame": self.__get_time_frame(total_dataframe),
-            "sensor_count": self.__count_unique(self.dataframes, "sensor_id"),
             **self.__get_measurement_statistics(total_dataframe),
             "location_statistics": self.__get_location_statistics(self.dataframes)
         }
 
-        with open(f"data/{self.save_folder}/metadata/statistics.json", "w+") as jsonfile:
+        with open(f"{self.data_folder}/statistics.json", "w+") as jsonfile:
             json.dump(statistics, jsonfile)
-
-    @staticmethod
-    def __count_unique(dataframes, column_name):
-        all_column = []
-        for df in dataframes:
-            all_column.append(df.at[0, column_name])
-
-        return len(list(set(all_column)))
 
     @staticmethod
     def __get_time_frame(total_dataframe):

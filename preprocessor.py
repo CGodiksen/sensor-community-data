@@ -11,7 +11,6 @@ import utility
 # TODO: Data cleaning
 class Preprocessor:
     def __init__(self, data_folder, combine_city_data=False, resample_freq=None):
-        logging.basicConfig(level=logging.INFO)
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
