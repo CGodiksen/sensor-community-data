@@ -11,6 +11,7 @@ import utility
 # TODO: Data cleaning
 class Preprocessor:
     def __init__(self, data_folder, combine_city_data=False, resample_freq=None):
+        logging.basicConfig(level=logging.INFO)
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
@@ -31,6 +32,7 @@ class Preprocessor:
             df.attrs["file_name"] = data_file.stem
             dataframes.append(df)
 
+        logging.info(f"Loaded {len(dataframes)} csv files into dataframes")
         return dataframes
 
     def start(self):
@@ -38,6 +40,7 @@ class Preprocessor:
         for df in self.dataframes:
             self.__simplify_location(df)
             df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
+        logging.info("Simplified location columns and parsed timestamp column into datetime")
 
         grouped_dataframes = utility.group_by_location(self.dataframes)
 
@@ -119,6 +122,7 @@ class Preprocessor:
 
         for df in dataframes:
             df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
+        logging.info(f"Saved data from {location} to persistent storage")
 
 
 test = Preprocessor("data/1613263929", combine_city_data=True)
