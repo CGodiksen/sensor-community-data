@@ -8,9 +8,8 @@ import utility
 
 
 class DataStatistics:
-    def __init__(self, data_folder, measurements):
+    def __init__(self, data_folder):
         self.data_folder = data_folder
-        self.measurements = measurements
         self.dataframes = utility.get_dataframes(data_folder)
 
     # Create a JSON file with statistics about the data in the given dataframes.
@@ -29,6 +28,7 @@ class DataStatistics:
 
     @staticmethod
     def __get_time_frame(total_dataframe):
+        total_dataframe["timestamp"] = pd.to_datetime(total_dataframe["timestamp"], infer_datetime_format=True)
         total_dataframe.sort_values("timestamp", inplace=True)
 
         earliest_date = total_dataframe["timestamp"].iloc[0].date()
@@ -37,13 +37,16 @@ class DataStatistics:
         return f"{earliest_date} - {latest_date}"
 
     # Return a dictionary with a key for each measurement. The value is a dict of statistics about the key measurement.
-    def __get_measurement_statistics(self, total_dataframe):
+    @staticmethod
+    def __get_measurement_statistics(total_dataframe):
         measurement_statistics = {}
 
         description = total_dataframe.describe()
         statistic_names = list(description.index)
 
-        for measurement in self.measurements:
+        measurement_columns = total_dataframe.columns.values.tolist()
+        measurement_columns.remove("timestamp")
+        for measurement in measurement_columns:
             measurement_statistics[measurement] = dict(zip(statistic_names, description[measurement]))
 
         return measurement_statistics
@@ -64,3 +67,7 @@ class DataStatistics:
             }
 
         return location_statistics
+
+
+test = DataStatistics("data/1613263929_preprocessed")
+test.create_statistics_file()
