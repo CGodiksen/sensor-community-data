@@ -23,12 +23,12 @@ class DataStatistics:
     # Create a JSON file with statistics about the data in the given dataframes.
     def create_statistics_file(self):
         logging.info("Creating statistics file...")
-        total_dataframe = pd.concat(self.dataframes, ignore_index=True)
+        total_dataframe = pd.concat(self.__combine_dict_values(self.grouped_dataframes), ignore_index=True)
 
         statistics = {
             "time_frame": self.__get_time_frame(total_dataframe),
             **self.__get_measurement_statistics(total_dataframe),
-            "location_statistics": self.__get_location_statistics(self.dataframes)
+            "location_statistics": self.__get_location_statistics()
         }
 
         with open(f"{self.data_folder}/statistics.json", "w+") as jsonfile:
@@ -59,14 +59,11 @@ class DataStatistics:
 
         return measurement_statistics
 
-    def __get_location_statistics(self, dataframes):
-        # Split the data into cities.
-        grouped_dataframes = utility.group_by_location(dataframes)
-
+    def __get_location_statistics(self):
         location_statistics = {
-            "location_count": len(list(os.walk(self.data_folder))[1])
+            "location_count": len(next(os.walk(self.data_folder))[1])
         }
-        for location, location_dataframes in grouped_dataframes.items():
+        for location, location_dataframes in self.grouped_dataframes.items():
             total_dataframe = pd.concat(location_dataframes, ignore_index=True)
 
             location_statistics[location] = {
