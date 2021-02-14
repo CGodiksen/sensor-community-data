@@ -81,7 +81,3 @@ class DataStatistics:
             combined.extend(value)
 
         return combined
-
-
-test = DataStatistics("data/1613263929_preprocessed")
-test.create_statistics_file()

@@ -131,7 +131,3 @@ class Preprocessor:
         for df in dataframes:
             df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
         logging.info(f"Saved data from {location} to persistent storage")
-
-
-test = Preprocessor("data/1613263929", combine_city_data=True)
-test.start()
