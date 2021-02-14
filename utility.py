@@ -7,5 +7,6 @@ def group_by_location(dataframes):
 
     for df in dataframes:
         grouped_dataframes[df.at[0, "location"]].append(df)
+        del df["location"]
 
     return grouped_dataframes
