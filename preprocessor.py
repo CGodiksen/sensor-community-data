@@ -1,11 +1,10 @@
+import collections
 import json
 import logging
 from pathlib import Path
 
 import pandas as pd
 import requests
-
-import utility
 
 
 # TODO: Data cleaning
@@ -14,13 +13,25 @@ class Preprocessor:
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
-        self.dataframes = utility.get_dataframes(self.data_folder)
+        self.dataframes = self.__get_dataframes()
 
         with open("location_cache.json", "r") as cachefile:
             self.location_cache = json.load(cachefile)
 
         with open("config.json", "r") as configfile:
             self.api_key = json.load(configfile)['maps_api_key']
+
+    # Parse through all csv files in the given data folder and load them into dataframes.
+    def __get_dataframes(self):
+        dataframes = []
+        for data_file in Path(self.data_folder).rglob("*.csv"):
+            df = pd.read_csv(data_file)
+
+            df.attrs["file_name"] = data_file.stem
+            dataframes.append(df)
+
+        logging.info(f"Loaded {len(dataframes)} csv files into dataframes")
+        return dataframes
 
     def start(self):
         # Doing preprocessing that should be applied to each dataframe individually.
@@ -29,7 +40,7 @@ class Preprocessor:
             df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
         logging.info("Simplified location columns and parsed timestamp column into datetime")
 
-        grouped_dataframes = utility.group_by_location(self.dataframes)
+        grouped_dataframes = self.__group_dataframes_by_location()
 
         for location, location_dataframes in grouped_dataframes.items():
             if self.combine_city_data:
@@ -89,6 +100,16 @@ class Preprocessor:
             return f"{city}-{country}"
         except IndexError:
             return ""
+
+    # Return a dictionary from locations to dataframes related to the specific locations.
+    def __group_dataframes_by_location(self):
+        grouped_dataframes = collections.defaultdict(list)
+
+        for df in self.dataframes:
+            grouped_dataframes[df.at[0, "location"]].append(df)
+            del df["location"]
+
+        return grouped_dataframes
 
     def __combine_city_dataframes(self, location, dataframes):
         df = pd.concat(dataframes, ignore_index=True)

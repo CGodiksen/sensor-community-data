@@ -68,6 +68,10 @@ class DataStatistics:
 
         return location_statistics
 
+    # Return a
+    def __get_dataframes_by_location(self):
+        pass
+
 
 test = DataStatistics("data/1613263929_preprocessed")
 test.create_statistics_file()
