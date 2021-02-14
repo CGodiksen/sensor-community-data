@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import pandas as pd
 
@@ -52,14 +53,13 @@ class DataStatistics:
         grouped_dataframes = utility.group_by_location(dataframes)
 
         location_statistics = {
-            "location_count": self.__count_unique(self.dataframes, "location")
+            "location_count": len(list(os.walk(self.data_folder))[1])
         }
         for location, location_dataframes in grouped_dataframes.items():
             total_dataframe = pd.concat(location_dataframes, ignore_index=True)
 
             location_statistics[location] = {
                 "time_frame": self.__get_time_frame(total_dataframe),
-                "sensor_count": self.__count_unique(location_dataframes, "sensor_id"),
                 **self.__get_measurement_statistics(total_dataframe),
             }
 
