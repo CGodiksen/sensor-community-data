@@ -76,9 +76,14 @@ class DataStatistics:
 
         return location_statistics
 
-    # Return a
-    def __get_dataframes_by_location(self):
-        pass
+    # Combine values in dict to one list. The dict must only have values of type list.
+    @staticmethod
+    def __combine_dict_values(dictionary):
+        combined = []
+        for key, value in dictionary.items():
+            combined.extend(value)
+
+        return combined
 
 
 test = DataStatistics("data/1613263929_preprocessed")
