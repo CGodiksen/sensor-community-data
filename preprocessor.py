@@ -14,7 +14,7 @@ class Preprocessor:
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
-        self.dataframes = self.__get_dataframes(data_folder)
+        self.dataframes = self.__get_dataframes()
 
         with open("location_cache.json", "r") as cachefile:
             self.location_cache = json.load(cachefile)
@@ -23,10 +23,9 @@ class Preprocessor:
             self.api_key = json.load(configfile)['maps_api_key']
 
     # Parse through all csv files in the given data folder and load them into dataframes.
-    @staticmethod
-    def __get_dataframes(data_folder):
+    def __get_dataframes(self):
         dataframes = []
-        for data_file in Path(data_folder).rglob("*.csv"):
+        for data_file in Path(self.data_folder).rglob("*.csv"):
             df = pd.read_csv(data_file)
 
             df.attrs["file_name"] = data_file.stem
@@ -44,15 +43,7 @@ class Preprocessor:
 
         for location, location_dataframes in grouped_dataframes.items():
             if self.combine_city_data:
-                df = pd.concat(location_dataframes, ignore_index=True)
-                df.sort_values("timestamp", inplace=True)
-
-                if self.resample_freq:
-                    df = df.resample(self.resample_freq, on="timestamp").mean()
-                    df.reset_index(level=0, inplace=True)
-
-                df.attrs["file_name"] = location
-                location_dataframes = [df]
+                location_dataframes = self.__combine_city_dataframes(location, location_dataframes)
 
             self.__dataframes_to_csv(location, location_dataframes)
 
@@ -109,14 +100,26 @@ class Preprocessor:
         except IndexError:
             return ""
 
+    def __combine_city_dataframes(self, location, dataframes):
+        df = pd.concat(dataframes, ignore_index=True)
+        df.sort_values("timestamp", inplace=True)
+
+        if self.resample_freq:
+            df = df.resample(self.resample_freq, on="timestamp").mean()
+            df.reset_index(level=0, inplace=True)
+
+        df.attrs["file_name"] = location
+
+        return [df]
+
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
-        path = Path(f"{self.data_folder}/preprocessed/{location}/")
+        path = Path(f"{self.data_folder}_preprocessed/{location}/")
         path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
             df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
 
 
-test = Preprocessor("data/1613262635/")
+test = Preprocessor("data/1613263929", combine_city_data=True)
 test.start()
