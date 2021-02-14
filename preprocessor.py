@@ -15,25 +15,13 @@ class Preprocessor:
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
-        self.dataframes = self.__get_dataframes()
+        self.dataframes = utility.get_dataframes(self.data_folder)
 
         with open("location_cache.json", "r") as cachefile:
             self.location_cache = json.load(cachefile)
 
         with open("config.json", "r") as configfile:
             self.api_key = json.load(configfile)['maps_api_key']
-
-    # Parse through all csv files in the given data folder and load them into dataframes.
-    def __get_dataframes(self):
-        dataframes = []
-        for data_file in Path(self.data_folder).rglob("*.csv"):
-            df = pd.read_csv(data_file)
-
-            df.attrs["file_name"] = data_file.stem
-            dataframes.append(df)
-
-        logging.info(f"Loaded {len(dataframes)} csv files into dataframes")
-        return dataframes
 
     def start(self):
         # Doing preprocessing that should be applied to each dataframe individually.
