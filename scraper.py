@@ -109,4 +109,4 @@ class Scraper:
         path.mkdir(parents=True, exist_ok=True)
 
         remaining_columns = [x for x in self.columns if x not in ["sensor_id", "sensor_type"]]
-        df.to_csv(f"{path.as_posix()}/{sensor_id}_{sensor_type}.csv", index=False, columns=remaining_columns)
+        df.to_csv(f"{path.as_posix()}/{date_str}_{sensor_id}_{sensor_type}.csv", index=False, columns=remaining_columns)

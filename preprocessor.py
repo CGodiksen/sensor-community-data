@@ -1,12 +1,11 @@
 import json
-import os
-
-import requests
 import logging
-import utility
-import pandas as pd
-
 from pathlib import Path
+
+import pandas as pd
+import requests
+
+import utility
 
 
 # TODO: Data cleaning
@@ -22,10 +21,6 @@ class Preprocessor:
 
         with open("config.json", "r") as configfile:
             self.api_key = json.load(configfile)['maps_api_key']
-
-        # Saving the potentially changed cache to persistent storage.
-        with open("location_cache.json", "w") as cachefile:
-            json.dump(self.location_cache, cachefile)
 
     # Parse through all csv files in the given data folder and load them into dataframes.
     @staticmethod
@@ -54,11 +49,16 @@ class Preprocessor:
 
                 if self.resample_freq:
                     df = df.resample(self.resample_freq, on="timestamp").mean()
+                    df.reset_index(level=0, inplace=True)
 
                 df.attrs["file_name"] = location
                 location_dataframes = [df]
 
             self.__dataframes_to_csv(location, location_dataframes)
+
+        # Saving the potentially changed cache to persistent storage.
+        with open("location_cache.json", "w") as cachefile:
+            json.dump(self.location_cache, cachefile)
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, df):
@@ -115,7 +115,8 @@ class Preprocessor:
         path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
-            df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}", index=False)
+            df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
 
 
-test = Preprocessor("data/1613254750/")
+test = Preprocessor("data/1613262635/")
+test.start()
