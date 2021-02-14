@@ -6,7 +6,7 @@ import pandas as pd
 import utility
 
 
-class SensorStatistics:
+class DataStatistics:
     def __init__(self, dataframes, save_folder, measurements):
         self.dataframes = dataframes
         self.save_folder = save_folder
