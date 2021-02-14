@@ -33,20 +33,31 @@ class Preprocessor:
         for data_file in Path(data_folder).rglob("*.csv"):
             df = pd.read_csv(data_file)
 
-            sensor_id, sensor_type = data_file.stem.split("_")
-            df.attrs["sensor_id"] = sensor_id
-            df.attrs["sensor_type"] = sensor_type
-
+            df.attrs["file_name"] = data_file.stem
             dataframes.append(df)
 
         return dataframes
 
-    # Mutating the data in various ways to make the data easier to use later.
     def start(self):
         # Doing preprocessing that should be applied to each dataframe individually.
         for df in self.dataframes:
             self.__simplify_location(df)
             df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
+
+        grouped_dataframes = utility.group_by_location(self.dataframes)
+
+        for location, location_dataframes in grouped_dataframes.items():
+            if self.combine_city_data:
+                df = pd.concat(location_dataframes, ignore_index=True)
+                df.sort_values("timestamp", inplace=True)
+
+                if self.resample_freq:
+                    df = df.resample(self.resample_freq, on="timestamp").mean()
+
+                df.attrs["file_name"] = location
+                location_dataframes = [df]
+
+            self.__dataframes_to_csv(location, location_dataframes)
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, df):
@@ -99,16 +110,8 @@ class Preprocessor:
 
     # TODO: Change this heavily
     # Writing each dataframe to the final folder structure.
-    def __dataframes_to_csv(self, dataframes):
-        if self.combine_city_data:
-            grouped_dataframes = utility.group_by_location(dataframes)
+    def __dataframes_to_csv(self, location, dataframes):
 
-            for location, dataframes in grouped_dataframes.items():
-                df = pd.concat(dataframes, ignore_index=True)
-                df.sort_values("timestamp", inplace=True)
-
-                if self.resample_freq:
-                    df = df.resample("T", on="timestamp").mean()
 
 
 test = Preprocessor("data/1613254750/")
