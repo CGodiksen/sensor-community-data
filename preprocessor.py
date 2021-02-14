@@ -12,6 +12,7 @@ from pathlib import Path
 # TODO: Data cleaning
 class Preprocessor:
     def __init__(self, data_folder, combine_city_data=False, resample_freq=None):
+        self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
         self.dataframes = self.__get_dataframes(data_folder)
@@ -108,10 +109,13 @@ class Preprocessor:
         except IndexError:
             return ""
 
-    # TODO: Change this heavily
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
+        path = Path(f"{self.data_folder}/preprocessed/{location}/")
+        path.mkdir(parents=True, exist_ok=True)
 
+        for df in dataframes:
+            df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}", index=False)
 
 
 test = Preprocessor("data/1613254750/")
