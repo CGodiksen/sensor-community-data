@@ -4,13 +4,21 @@ import os
 
 import pandas as pd
 
-import utility
-
 
 class DataStatistics:
     def __init__(self, data_folder):
         self.data_folder = data_folder
-        self.dataframes = utility.get_dataframes(data_folder)
+        self.grouped_dataframes = self.__load_grouped_data()
+
+    # Loads the CSV files from each folder in the data folder into a separate group with the folder name as the key.
+    def __load_grouped_data(self):
+        grouped_dataframes = {}
+
+        for folder in next(os.walk(self.data_folder))[1]:
+            path = f"{self.data_folder}/{folder}/"
+            grouped_dataframes[folder] = [pd.read_csv(f"{path}/{file}") for file in os.listdir(path)]
+
+        return grouped_dataframes
 
     # Create a JSON file with statistics about the data in the given dataframes.
     def create_statistics_file(self):
