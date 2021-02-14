@@ -34,6 +34,8 @@ class Preprocessor:
         return dataframes
 
     def start(self):
+        self.__save_preprocessing_settings()
+
         # Doing preprocessing that should be applied to each dataframe individually.
         for df in self.dataframes:
             self.__simplify_location(df)
@@ -51,6 +53,15 @@ class Preprocessor:
         # Saving the potentially changed cache to persistent storage.
         with open("location_cache.json", "w") as cachefile:
             json.dump(self.location_cache, cachefile)
+
+    # Creating a settings file specifying which settings are used for data preprocessing.
+    def __save_preprocessing_settings(self):
+        path = Path(f"{self.data_folder}_preprocessed/")
+        path.mkdir(parents=True, exist_ok=True)
+
+        with open(path.joinpath("settings.json"), "w+") as jsonfile:
+            settings = {"combine_city_data": self.combine_city_data, "resample_frequency": self.resample_freq}
+            json.dump(settings, jsonfile, default=str)
 
     # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
     def __simplify_location(self, df):
