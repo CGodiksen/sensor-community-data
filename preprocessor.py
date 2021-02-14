@@ -24,7 +24,7 @@ class Preprocessor:
     # Parse through all csv files in the given data folder and load them into dataframes.
     def __get_dataframes(self):
         dataframes = []
-        for data_file in Path(self.data_folder).rglob("*.csv"):
+        for data_file in self.data_folder.rglob("*.csv"):
             df = pd.read_csv(data_file)
 
             df.attrs["file_name"] = data_file.stem

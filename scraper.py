@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 from datetime import date, timedelta
 from multiprocessing.dummy import Pool
 from pathlib import Path
@@ -12,11 +11,12 @@ from bs4 import BeautifulSoup
 
 # TODO: If the used config matches an existing config file then don't download already downloaded files.
 class Scraper:
-    def __init__(self, measurements, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None,
+    def __init__(self, save_path, measurements, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None,
                  sensor_ids=None, remove_indoor=True):
         self.columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
 
+        self.save_path = save_path
         self.start_date = start_date
         self.end_date = end_date
         self.sensor_types = sensor_types
@@ -24,26 +24,23 @@ class Scraper:
         self.remove_indoor = remove_indoor
 
     def start(self):
-        folder_path = self.__save_scrape_settings()
+        self.__save_scrape_settings()
 
         # Retrieving the urls containing the wanted data in the online archive.
         date_urls = self.__get_date_urls()
         file_urls = self.__get_file_urls(date_urls)
 
-        Pool().map(lambda file_url: self.__process_file(file_url, folder_path), file_urls)
+        Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
-        path = Path(f"data/{int(time.time())}/")
-        path.mkdir(parents=True, exist_ok=True)
+        self.save_path.mkdir(parents=True, exist_ok=True)
 
-        with open(path.joinpath("settings.json"), "w+") as jsonfile:
+        with open(self.save_path.joinpath("settings.json"), "w+") as jsonfile:
             settings = self.__dict__.copy()
             del settings["url"]
 
             json.dump(settings, jsonfile, default=str)
-
-        return path.as_posix()
 
     # Return list of urls corresponding to the days which should be scraped from.
     def __get_date_urls(self):
@@ -87,25 +84,25 @@ class Scraper:
         return file_urls
 
     # Fully processing a single file, which involves downloading it, modifying it slightly and saving it locally.
-    def __process_file(self, file_url, folder_path):
+    def __process_file(self, file_url):
         df = self.__read_csv_helper(file_url)
         df.dropna(inplace=True)
 
         # The dataframe will be empty if at least one value was missing in each row.
         if not df.empty:
-            self.__to_csv_helper(df, folder_path)
+            self.__to_csv_helper(df)
 
     def __read_csv_helper(self, file_url):
         logging.info(f"Converting {file_url} to a dataframe")
 
         return pd.read_csv(file_url, sep=";", usecols=self.columns)
 
-    def __to_csv_helper(self, df, folder_path):
+    def __to_csv_helper(self, df):
         sensor_id = df.at[0, "sensor_id"]
         sensor_type = df.at[0, "sensor_type"]
         date_str = df.at[0, "timestamp"][:10]
 
-        path = Path(f"{folder_path}/{date_str}/")
+        path = Path(f"{self.save_path}/{date_str}/")
         path.mkdir(parents=True, exist_ok=True)
 
         remaining_columns = [x for x in self.columns if x not in ["sensor_id", "sensor_type"]]
