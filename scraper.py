@@ -75,8 +75,8 @@ class Scraper:
 
         # Doing the same as above but for sensor ids.
         if self.sensor_ids:
-            file_urls = list(filter(
-                lambda file_url: any(f"sensor_{sensor_id}" in file_url for sensor_id in self.sensor_ids), file_urls))
+            file_urls = list(filter(lambda file_url: any(sensor_id == int(file_url.split("_")[3].replace(".csv", ""))
+                                                         for sensor_id in self.sensor_ids), file_urls))
 
         if self.remove_indoor:
             file_urls = list(filter(lambda file_url: "indoor" not in file_url, file_urls))
