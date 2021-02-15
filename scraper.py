@@ -3,6 +3,7 @@ import logging
 from datetime import date, timedelta
 from multiprocessing.dummy import Pool
 from pathlib import Path
+from itertools import chain
 
 import pandas as pd
 import requests
@@ -28,7 +29,10 @@ class Scraper:
 
         # Retrieving the urls containing the wanted data in the online archive.
         date_urls = self.__get_date_urls()
-        file_urls = self.__get_file_urls(date_urls)
+        file_urls = Pool().map(self.__get_file_urls, date_urls)
+
+        # Flattening the list of lists.
+        file_urls = list(chain.from_iterable(file_urls))
 
         Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
 
@@ -48,17 +52,13 @@ class Scraper:
 
         return [f"{self.url}{str(self.start_date + timedelta(days=i))}" for i in range(delta.days + 1)]
 
-    # Return a list of the files that should be scraped, gathered from each date url.
-    def __get_file_urls(self, date_urls):
-        file_urls = []
+    # Return a list of the files that should be scraped, gathered from the data url.
+    def __get_file_urls(self, date_url):
+        logging.info(f"Retrieving file urls from {date_url}...")
+        date_html = requests.get(date_url).text
+        soup = BeautifulSoup(date_html, features="html.parser")
 
-        for date_url in date_urls:
-            logging.info(f"Retrieving file urls from {date_url}...")
-            date_html = requests.get(date_url).text
-            soup = BeautifulSoup(date_html, features="html.parser")
-
-            file_urls.extend([f"{date_url}/{a['href']}" for a in soup.find_all('a', href=True)])
-
+        file_urls = ([f"{date_url}/{a['href']}" for a in soup.find_all('a', href=True)])
         file_urls = self.__remove_unwanted_files(file_urls)
         logging.info(f"Retrieved {len(file_urls)} file urls")
 
