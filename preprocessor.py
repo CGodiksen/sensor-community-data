@@ -39,7 +39,7 @@ class Preprocessor:
         # Doing preprocessing that should be applied to each dataframe individually.
         for df in self.dataframes:
             self.__simplify_location(df)
-            df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True)
+            df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
         logging.info("Simplified location columns and parsed timestamp column into datetime")
 
         grouped_dataframes = self.__group_dataframes_by_location()
