@@ -16,6 +16,7 @@ class Preprocessor:
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
 
+        # Manually loading dataframes if they were not given.
         if dataframes is None:
             self.dataframes = self.__get_dataframes()
         else:
@@ -145,7 +146,7 @@ class Preprocessor:
     def __dataframes_to_csv(self, location, dataframes):
         # Saving the dataframes in an attribute so they can be used directly, outside preprocessing.
         self.final_grouped_dataframes[location] = dataframes
-        
+
         path = Path(f"{self.data_folder}_preprocessed/{location}/")
         path.mkdir(parents=True, exist_ok=True)
 

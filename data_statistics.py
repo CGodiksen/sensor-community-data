@@ -6,9 +6,14 @@ import pandas as pd
 
 
 class DataStatistics:
-    def __init__(self, data_folder):
+    def __init__(self, grouped_dataframes=None, data_folder=None):
         self.data_folder = data_folder
-        self.grouped_dataframes = self.__load_grouped_data()
+
+        # Manually loading grouped dataframes if they were not given.
+        if grouped_dataframes is None:
+            self.grouped_dataframes = self.__load_grouped_data()
+        else:
+            self.grouped_dataframes = grouped_dataframes
 
     # Loads the CSV files from each folder in the data folder into a separate group with the folder name as the key.
     def __load_grouped_data(self):
