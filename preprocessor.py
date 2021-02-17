@@ -49,7 +49,7 @@ class Preprocessor:
         grouped_dataframes_sensor_id = self.__group_dataframes_by_sensor_id()
         sensor_locations = self.__get_sensor_locations(grouped_dataframes_sensor_id)
 
-        grouped_dataframes_location = self.__group_dataframes_by_location(grouped_dataframes_sensor_id)
+        grouped_dataframes_location = self.__group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations)
 
         # Doing preprocessing that should be applied to each dataframe individually.
 
@@ -58,10 +58,9 @@ class Preprocessor:
         #del df["lat"]
         #del df["lon"]
         #df.loc[:, "location"] = location
+        #del df["location"]
 
-        grouped_dataframes = self.__group_dataframes_by_location()
-
-        for location, location_dataframes in grouped_dataframes.items():
+        for location, location_dataframes in grouped_dataframes_location.items():
             if self.combine_city_data:
                 location_dataframes = self.__combine_city_dataframes(location, location_dataframes)
 
@@ -82,6 +81,7 @@ class Preprocessor:
 
     def __group_dataframes_by_sensor_id(self):
         grouped_dataframes_sensor_id = collections.defaultdict(list)
+
         for df in self.dataframes:
             grouped_dataframes_sensor_id[df.attrs["sensor_id"]].append(df)
 
@@ -91,7 +91,7 @@ class Preprocessor:
     def __get_sensor_locations(self, grouped_dataframes_sensor_id):
         sensor_locations = {}
         for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
-            df = sensor_id[0]
+            df = sensor_id_dataframes[0]
             location_id = df.at[0, "location"]
             lat = df.at[0, "lat"]
             lng = df.at[0, "lon"]
@@ -139,15 +139,14 @@ class Preprocessor:
         except IndexError:
             return ""
 
-    # Return a dictionary from locations to dataframes related to the specific locations.
-    def __group_dataframes_by_location(self):
-        grouped_dataframes = collections.defaultdict(list)
+    @staticmethod
+    def __group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations):
+        grouped_dataframes_location = collections.defaultdict(list)
 
-        for df in self.dataframes:
-            grouped_dataframes[df.at[0, "location"]].append(df)
-            del df["location"]
+        for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id:
+            grouped_dataframes_location[sensor_locations[sensor_id]].extend(sensor_id_dataframes)
 
-        return grouped_dataframes
+        return grouped_dataframes_location
 
     def __combine_city_dataframes(self, location, dataframes):
         df = pd.concat(dataframes, ignore_index=True)
