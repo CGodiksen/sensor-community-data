@@ -67,7 +67,7 @@ class DataStatistics:
 
     def __get_location_statistics(self):
         location_statistics = {
-            "location_count": len(next(os.walk(self.data_folder))[1])
+            "location_count": len(self.grouped_dataframes)
         }
         for location, location_dataframes in self.grouped_dataframes.items():
             total_dataframe = pd.concat(location_dataframes, ignore_index=True)

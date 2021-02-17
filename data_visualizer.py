@@ -11,4 +11,4 @@ class DataVisualizer:
 
 
 test = DataVisualizer()
-test.get_line_chart("data/1613394996_preprocessed/Sofia-Bulgaria/Sofia-Bulgaria.csv")
+test.get_line_chart("data/1613467525_preprocessed/Stuttgart-Germany/Stuttgart-Germany.csv")
