@@ -9,11 +9,15 @@ import requests
 
 # TODO: Data cleaning
 class Preprocessor:
-    def __init__(self, data_folder, combine_city_data=False, resample_freq=None):
+    def __init__(self, dataframes=None, data_folder=None, combine_city_data=False, resample_freq=None):
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
-        self.dataframes = self.__get_dataframes()
+
+        if dataframes is None:
+            self.dataframes = self.__get_dataframes()
+        else:
+            self.dataframes = dataframes
 
         with open("location_cache.json", "r") as cachefile:
             self.location_cache = json.load(cachefile)
