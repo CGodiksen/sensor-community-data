@@ -6,7 +6,8 @@ import pandas as pd
 
 
 class DataStatistics:
-    def __init__(self, grouped_dataframes=None, data_folder=None):
+    def __init__(self, save_path, grouped_dataframes=None, data_folder=None):
+        self.save_path = save_path
         self.data_folder = data_folder
 
         # Manually loading grouped dataframes if they were not given.
@@ -36,7 +37,7 @@ class DataStatistics:
             "location_statistics": self.__get_location_statistics()
         }
 
-        with open(f"{self.data_folder}/statistics.json", "w+") as jsonfile:
+        with open(f"{self.save_path}/statistics.json", "w+") as jsonfile:
             json.dump(statistics, jsonfile)
 
     @staticmethod
