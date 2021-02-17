@@ -32,6 +32,7 @@ class Preprocessor:
             df = pd.read_csv(data_file)
 
             df.attrs["file_name"] = data_file.stem
+            df.attrs["sensor_id"] = data_file.stem.split("_")[1]
             dataframes.append(df)
 
         logging.info(f"Loaded {len(dataframes)} csv files into dataframes")
