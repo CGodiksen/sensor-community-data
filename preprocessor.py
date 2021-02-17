@@ -45,11 +45,15 @@ class Preprocessor:
     def start(self):
         self.__save_preprocessing_settings()
 
+        self.__get_sensor_locations()
+
+
+        # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
         # Doing preprocessing that should be applied to each dataframe individually.
-        for df in self.dataframes:
-            self.__simplify_location(df)
-            df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
-        logging.info("Simplified location columns and parsed timestamp column into datetime")
+        # df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
+        #del df["lat"]
+        #del df["lon"]
+        #df.loc[:, "location"] = location
 
         grouped_dataframes = self.__group_dataframes_by_location()
 
@@ -72,21 +76,29 @@ class Preprocessor:
             settings = {"combine_city_data": self.combine_city_data, "resample_frequency": self.resample_freq}
             json.dump(settings, jsonfile, default=str)
 
-    # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
-    def __simplify_location(self, df):
-        location_id = df.at[0, "location"]
-        lat = df.at[0, "lat"]
-        lng = df.at[0, "lon"]
+    # Return a dict with key-value pairs of the format "sensor_id-location".
+    def __get_sensor_locations(self):
+        # Grouping the dataframes by sensor id so the location is only found once per sensor.
+        grouped_dataframes_sensor_id = collections.defaultdict(list)
+        for df in self.dataframes:
+            grouped_dataframes_sensor_id[df.attrs["sensor_id"]].append(df)
 
-        if not pd.isnull(lat) and not pd.isnull(lng):
-            location = self.__get_city_country(str(location_id), lat, lng)
-        else:
-            location = ""
+        sensor_locations = {}
+        for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
+            df = sensor_id[0]
+            location_id = df.at[0, "location"]
+            lat = df.at[0, "lat"]
+            lng = df.at[0, "lon"]
 
-        del df["lat"]
-        del df["lon"]
-        df.loc[:, "location"] = location
-        logging.info(f"Simplified {location_id}, {lat}, {lng} to {location}")
+            if not pd.isnull(lat) and not pd.isnull(lng):
+                location = self.__get_city_country(str(location_id), lat, lng)
+            else:
+                location = ""
+            logging.info(f"Simplified {location_id}, {lat}, {lng} to {location}")
+
+            sensor_locations[sensor_id] = location
+
+        return sensor_locations
 
     # Return a string with the format "city-country" based on the given latitude and longitude
     def __get_city_country(self, location_id, lat, lng):
