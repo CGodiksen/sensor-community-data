@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 class Scraper:
     def __init__(self, save_path, measurements, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None,
                  sensor_ids=None, remove_indoor=True, save_data=True):
-        self.columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"] + measurements
+        self.columns = ["location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
         self.dataframes = []
 
@@ -99,7 +99,14 @@ class Scraper:
     def __read_csv_helper(self, file_url):
         logging.info(f"Converting {file_url} to a dataframe")
 
-        return pd.read_csv(file_url, sep=";", usecols=self.columns)
+        df = pd.read_csv(file_url, sep=";", usecols=self.columns)
+
+        split_file_url = file_url.split("_")
+        df.attrs["date"] = split_file_url[0]
+        df.attrs["sensor_type"] = split_file_url[1]
+        df.attrs["sensor_id"] = split_file_url[3]
+
+        return df
 
     def __to_csv_helper(self, df):
         sensor_id = df.at[0, "sensor_id"]
