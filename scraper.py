@@ -27,7 +27,8 @@ class Scraper:
         self.save_data = save_data
 
     def start(self):
-        self.__save_scrape_settings()
+        if self.save_data:
+            self.__save_scrape_settings()
 
         # Retrieving the urls containing the wanted data in the online archive.
         date_urls = self.__get_date_urls()
