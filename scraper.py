@@ -104,16 +104,19 @@ class Scraper:
 
         # Removing the website and ".csv" from the url with list slicing to get the file name only.
         split_file_name = file_url[44:-4].split("_")
+
+        # Extracting metadata about the dataframe so it can be used to save the data and in preprocessing.
         df.attrs["date"] = split_file_name[0]
         df.attrs["sensor_type"] = split_file_name[1]
         df.attrs["sensor_id"] = split_file_name[3]
+        df.attrs["file_name"] = f"{df.attrs['date']}_{df.attrs['sensor_id']}_{df.attrs['sensor_type']}"
 
         return df
 
     def __to_csv_helper(self, df):
         path = Path(f"{self.save_path}/{df.attrs['date']}/")
         path.mkdir(parents=True, exist_ok=True)
-        file_path = f"{path.as_posix()}/{df.attrs['date']}_{df.attrs['sensor_id']}_{df.attrs['sensor_type']}.csv"
+        file_path = f"{path.as_posix()}/{df.attrs['file_name']}.csv"
 
         logging.info(f"Saving dataframe to {file_path}")
         df.to_csv(file_path, index=False)
