@@ -49,16 +49,9 @@ class Preprocessor:
         grouped_dataframes_sensor_id = self.__group_dataframes_by_sensor_id()
         sensor_locations = self.__get_sensor_locations(grouped_dataframes_sensor_id)
 
+        self.__clean_individual_dataframes()
+
         grouped_dataframes_location = self.__group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations)
-
-        # Doing preprocessing that should be applied to each dataframe individually.
-
-        # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
-        # df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
-        #del df["lat"]
-        #del df["lon"]
-        #df.loc[:, "location"] = location
-        #del df["location"]
 
         for location, location_dataframes in grouped_dataframes_location.items():
             if self.combine_city_data:
@@ -143,10 +136,20 @@ class Preprocessor:
     def __group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations):
         grouped_dataframes_location = collections.defaultdict(list)
 
-        for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id:
+        for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
             grouped_dataframes_location[sensor_locations[sensor_id]].extend(sensor_id_dataframes)
 
         return grouped_dataframes_location
+
+    # Doing preprocessing that should be applied to each dataframe individually.
+    def __clean_individual_dataframes(self):
+        for df in self.dataframes:
+            df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
+
+            # Removing location information from the data itself since it is now handled as metadata.
+            del df["lat"]
+            del df["lon"]
+            del df["location"]
 
     def __combine_city_dataframes(self, location, dataframes):
         df = pd.concat(dataframes, ignore_index=True)
