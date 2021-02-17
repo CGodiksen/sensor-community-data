@@ -10,6 +10,8 @@ import requests
 # TODO: Data cleaning
 class Preprocessor:
     def __init__(self, dataframes=None, data_folder=None, combine_city_data=False, resample_freq=None):
+        self.final_grouped_dataframes = {}
+
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
@@ -141,6 +143,9 @@ class Preprocessor:
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
+        # Saving the dataframes in an attribute so they can be used directly, outside preprocessing.
+        self.final_grouped_dataframes[location] = dataframes
+        
         path = Path(f"{self.data_folder}_preprocessed/{location}/")
         path.mkdir(parents=True, exist_ok=True)
 
