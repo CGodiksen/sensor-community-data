@@ -45,11 +45,15 @@ class Preprocessor:
     def start(self):
         self.__save_preprocessing_settings()
 
-        self.__get_sensor_locations()
+        # Grouping the dataframes by sensor id so the location is only found once per sensor.
+        grouped_dataframes_sensor_id = self.__group_dataframes_by_sensor_id()
+        sensor_locations = self.__get_sensor_locations(grouped_dataframes_sensor_id)
 
+        grouped_dataframes_location = self.__group_dataframes_by_location(grouped_dataframes_sensor_id)
+
+        # Doing preprocessing that should be applied to each dataframe individually.
 
         # Uses reverse geocoding to replace the "location", "lat" and "lon" columns with city-country.
-        # Doing preprocessing that should be applied to each dataframe individually.
         # df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
         #del df["lat"]
         #del df["lon"]
@@ -76,13 +80,15 @@ class Preprocessor:
             settings = {"combine_city_data": self.combine_city_data, "resample_frequency": self.resample_freq}
             json.dump(settings, jsonfile, default=str)
 
-    # Return a dict with key-value pairs of the format "sensor_id-location".
-    def __get_sensor_locations(self):
-        # Grouping the dataframes by sensor id so the location is only found once per sensor.
+    def __group_dataframes_by_sensor_id(self):
         grouped_dataframes_sensor_id = collections.defaultdict(list)
         for df in self.dataframes:
             grouped_dataframes_sensor_id[df.attrs["sensor_id"]].append(df)
 
+        return grouped_dataframes_sensor_id
+
+    # Return a dict with key-value pairs of the format "sensor_id-location".
+    def __get_sensor_locations(self, grouped_dataframes_sensor_id):
         sensor_locations = {}
         for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
             df = sensor_id[0]
