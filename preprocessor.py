@@ -89,10 +89,7 @@ class Preprocessor:
             lat = df.at[0, "lat"]
             lng = df.at[0, "lon"]
 
-            if not pd.isnull(lat) and not pd.isnull(lng):
-                location = self.__get_city_country(str(location_id), lat, lng)
-            else:
-                location = ""
+            location = self.__get_city_country(str(location_id), lat, lng)
             logging.info(f"Simplified {location_id}, {lat}, {lng} to {location}")
 
             sensor_locations[sensor_id] = location
