@@ -101,11 +101,11 @@ class Scraper:
 
         df = pd.read_csv(file_url, sep=";", usecols=self.columns)
 
-        split_file_url = file_url.split("_")
-        df.attrs["date"] = split_file_url[0]
-        df.attrs["sensor_type"] = split_file_url[1]
-        # Removing ".csv" from the sensor id using list slicing.
-        df.attrs["sensor_id"] = split_file_url[3][:-4]
+        # Removing the website and ".csv" from the url with list slicing to get the file name only.
+        split_file_name = file_url[44:-4].split("_")
+        df.attrs["date"] = split_file_name[0]
+        df.attrs["sensor_type"] = split_file_name[1]
+        df.attrs["sensor_id"] = split_file_name[3]
 
         return df
 
