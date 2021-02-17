@@ -104,17 +104,14 @@ class Scraper:
         split_file_url = file_url.split("_")
         df.attrs["date"] = split_file_url[0]
         df.attrs["sensor_type"] = split_file_url[1]
-        df.attrs["sensor_id"] = split_file_url[3]
+        # Removing ".csv" from the sensor id using list slicing.
+        df.attrs["sensor_id"] = split_file_url[3][:-4]
 
         return df
 
     def __to_csv_helper(self, df):
-        sensor_id = df.at[0, "sensor_id"]
-        sensor_type = df.at[0, "sensor_type"]
-        date_str = df.at[0, "timestamp"][:10]
-
-        path = Path(f"{self.save_path}/{date_str}/")
+        path = Path(f"{self.save_path}/{df.attrs['date']}/")
         path.mkdir(parents=True, exist_ok=True)
 
-        remaining_columns = [x for x in self.columns if x not in ["sensor_id", "sensor_type"]]
-        df.to_csv(f"{path.as_posix()}/{date_str}_{sensor_id}_{sensor_type}.csv", index=False, columns=remaining_columns)
+        file_path = f"{path.as_posix()}/{df.attrs['date']}_{df.attrs['sensor_id']}_{df.attrs['sensor_type']}.csv"
+        df.to_csv(file_path, index=False)
