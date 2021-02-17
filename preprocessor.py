@@ -170,6 +170,9 @@ class Preprocessor:
             df = df.resample(self.resample_freq, on="timestamp").mean()
             df.reset_index(level=0, inplace=True)
 
+            # Rounding since resampling with mean results in too many decimals for the measurements.
+            df = df.round(2)
+
             resampled_dataframes.append(df)
             df.attrs["file_name"] = file_name
 
