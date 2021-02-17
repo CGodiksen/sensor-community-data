@@ -15,7 +15,7 @@ if __name__ == '__main__':
                       sensor_types=["sds011"], save_data=False)
     scraper.start()
 
-    preprocessor = Preprocessor(f"{path}_preprocessed", dataframes=scraper.dataframes, combine_city_data=True,
+    preprocessor = Preprocessor(f"{path}_preprocessed", dataframes=scraper.dataframes,
                                 resample_freq="5T")
     preprocessor.start()
 

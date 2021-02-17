@@ -57,6 +57,9 @@ class Preprocessor:
             if self.combine_city_data:
                 location_dataframes = self.__combine_city_dataframes(location, location_dataframes)
 
+            if self.resample_freq:
+                location_dataframes = self.__resample_helper(location_dataframes)
+
             self.__dataframes_to_csv(location, location_dataframes)
 
         # Saving the potentially changed cache to persistent storage.
@@ -148,17 +151,29 @@ class Preprocessor:
             del df["lon"]
             del df["location"]
 
-    def __combine_city_dataframes(self, location, dataframes):
+    @staticmethod
+    def __combine_city_dataframes(location, dataframes):
         df = pd.concat(dataframes, ignore_index=True)
         df.sort_values("timestamp", inplace=True)
-
-        if self.resample_freq:
-            df = df.resample(self.resample_freq, on="timestamp").mean()
-            df.reset_index(level=0, inplace=True)
 
         df.attrs["file_name"] = location
 
         return [df]
+
+    def __resample_helper(self, dataframes):
+        resampled_dataframes = []
+
+        for df in dataframes:
+            # Extracting the metadata attribute since it is removed when resampling.
+            file_name = df.attrs["file_name"]
+
+            df = df.resample(self.resample_freq, on="timestamp").mean()
+            df.reset_index(level=0, inplace=True)
+
+            resampled_dataframes.append(df)
+            df.attrs["file_name"] = file_name
+
+        return resampled_dataframes
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
