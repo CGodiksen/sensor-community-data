@@ -9,9 +9,10 @@ import requests
 
 # TODO: Data cleaning
 class Preprocessor:
-    def __init__(self, dataframes=None, data_folder=None, combine_city_data=False, resample_freq=None):
+    def __init__(self, save_path, dataframes=None, data_folder=None, combine_city_data=False, resample_freq=None):
         self.final_grouped_dataframes = {}
 
+        self.save_path = save_path
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
@@ -64,7 +65,7 @@ class Preprocessor:
 
     # Creating a settings file specifying which settings are used for data preprocessing.
     def __save_preprocessing_settings(self):
-        path = Path(f"{self.data_folder}_preprocessed/")
+        path = Path(self.save_path)
         path.mkdir(parents=True, exist_ok=True)
 
         with open(path.joinpath("settings.json"), "w+") as jsonfile:
@@ -147,7 +148,7 @@ class Preprocessor:
         # Saving the dataframes in an attribute so they can be used directly, outside preprocessing.
         self.final_grouped_dataframes[location] = dataframes
 
-        path = Path(f"{self.data_folder}_preprocessed/{location}/")
+        path = Path(f"{self.save_path}/{location}/")
         path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
