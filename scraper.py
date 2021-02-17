@@ -56,7 +56,7 @@ class Scraper:
 
     # Return a list of the files that should be scraped, gathered from the data url.
     def __get_file_urls(self, date_url):
-        logging.info(f"Retrieving file urls from {date_url}...")
+        logging.info(f"Retrieving file urls from {date_url}")
         date_html = requests.get(date_url).text
         soup = BeautifulSoup(date_html, features="html.parser")
 
@@ -112,6 +112,7 @@ class Scraper:
     def __to_csv_helper(self, df):
         path = Path(f"{self.save_path}/{df.attrs['date']}/")
         path.mkdir(parents=True, exist_ok=True)
-
         file_path = f"{path.as_posix()}/{df.attrs['date']}_{df.attrs['sensor_id']}_{df.attrs['sensor_type']}.csv"
+
+        logging.info(f"Saving dataframe to {file_path}")
         df.to_csv(file_path, index=False)
