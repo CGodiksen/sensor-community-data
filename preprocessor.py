@@ -165,7 +165,7 @@ class Preprocessor:
         # Saving the dataframes in an attribute so they can be used directly, outside preprocessing.
         self.final_grouped_dataframes[location] = dataframes
 
-        path = Path(f"{self.save_path}/{location}/")
+        path = Path(f"{self.save_path}/{location.replace('/', '-')}/")
         path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
