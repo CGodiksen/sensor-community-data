@@ -13,9 +13,10 @@ from bs4 import BeautifulSoup
 # TODO: If the used config matches an existing config file then don't download already downloaded files.
 class Scraper:
     def __init__(self, save_path, measurements, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None,
-                 sensor_ids=None, remove_indoor=True):
+                 sensor_ids=None, remove_indoor=True, save_data=True):
         self.columns = ["sensor_id", "sensor_type", "location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
+        self.dataframes = []
 
         self.save_path = save_path
         self.start_date = start_date
@@ -23,6 +24,7 @@ class Scraper:
         self.sensor_types = sensor_types
         self.sensor_ids = sensor_ids
         self.remove_indoor = remove_indoor
+        self.save_data = save_data
 
     def start(self):
         self.__save_scrape_settings()
@@ -34,7 +36,7 @@ class Scraper:
         # Flattening the list of lists.
         file_urls = list(chain.from_iterable(file_urls))
 
-        Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
+        self.dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
@@ -89,8 +91,10 @@ class Scraper:
         df.dropna(inplace=True)
 
         # The dataframe will be empty if at least one value was missing in each row.
-        if not df.empty:
+        if not df.empty and self.save_data:
             self.__to_csv_helper(df)
+
+        return df
 
     def __read_csv_helper(self, file_url):
         logging.info(f"Converting {file_url} to a dataframe")
