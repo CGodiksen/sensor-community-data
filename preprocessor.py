@@ -173,13 +173,14 @@ class Preprocessor:
             df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
         logging.info(f"Saved data from {location} to persistent storage")
 
-    def __group_dataframes_by_sensor_id(self):
-        grouped_dataframes_sensor_id = collections.defaultdict(list)
+    @staticmethod
+    def __group_dataframes_by_attribute(dataframes, attribute):
+        grouped_dataframes = collections.defaultdict(list)
 
-        for df in self.dataframes:
-            grouped_dataframes_sensor_id[df.attrs["sensor_id"]].append(df)
+        for df in dataframes:
+            grouped_dataframes[df.attrs[attribute]].append(df)
 
-        return grouped_dataframes_sensor_id
+        return grouped_dataframes
 
     @staticmethod
     def __group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations):
