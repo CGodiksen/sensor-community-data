@@ -75,14 +75,6 @@ class Preprocessor:
             settings = {"combine_city_data": self.combine_city_data, "resample_frequency": self.resample_freq}
             json.dump(settings, jsonfile, default=str)
 
-    def __group_dataframes_by_sensor_id(self):
-        grouped_dataframes_sensor_id = collections.defaultdict(list)
-
-        for df in self.dataframes:
-            grouped_dataframes_sensor_id[df.attrs["sensor_id"]].append(df)
-
-        return grouped_dataframes_sensor_id
-
     # Return a dict with key-value pairs of the format "sensor_id-location".
     def __get_sensor_locations(self, grouped_dataframes_sensor_id):
         sensor_locations = {}
@@ -132,15 +124,6 @@ class Preprocessor:
         except IndexError:
             return ""
 
-    @staticmethod
-    def __group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations):
-        grouped_dataframes_location = collections.defaultdict(list)
-
-        for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
-            grouped_dataframes_location[sensor_locations[sensor_id]].extend(sensor_id_dataframes)
-
-        return grouped_dataframes_location
-
     # Doing preprocessing that should be applied to each dataframe individually.
     def __clean_individual_dataframes(self):
         for df in self.dataframes:
@@ -189,3 +172,20 @@ class Preprocessor:
         for df in dataframes:
             df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
         logging.info(f"Saved data from {location} to persistent storage")
+
+    def __group_dataframes_by_sensor_id(self):
+        grouped_dataframes_sensor_id = collections.defaultdict(list)
+
+        for df in self.dataframes:
+            grouped_dataframes_sensor_id[df.attrs["sensor_id"]].append(df)
+
+        return grouped_dataframes_sensor_id
+
+    @staticmethod
+    def __group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations):
+        grouped_dataframes_location = collections.defaultdict(list)
+
+        for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
+            grouped_dataframes_location[sensor_locations[sensor_id]].extend(sensor_id_dataframes)
+
+        return grouped_dataframes_location
