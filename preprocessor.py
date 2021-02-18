@@ -128,7 +128,7 @@ class Preprocessor:
             city = list(filter(lambda x: x["types"] == ["locality", "political"], address_comp))[0]["long_name"]
             country = list(filter(lambda x: x["types"] == ["country", "political"], address_comp))[0]["long_name"]
 
-            return f"{city}-{country}"
+            return f"{city}_{country}"
         except IndexError:
             return ""
 
