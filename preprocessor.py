@@ -35,8 +35,11 @@ class Preprocessor:
         for data_file in self.data_folder.rglob("*.csv"):
             df = pd.read_csv(data_file)
 
+            split_file_name = data_file.stem.split("_")
+            df.attrs["date"] = split_file_name[0]
+            df.attrs["sensor_id"] = split_file_name[1]
+
             df.attrs["file_name"] = data_file.stem
-            df.attrs["sensor_id"] = data_file.stem.split("_")[1]
             dataframes.append(df)
 
         logging.info(f"Loaded {len(dataframes)} csv files into dataframes")
@@ -55,7 +58,7 @@ class Preprocessor:
 
         for location, location_dataframes in grouped_dataframes_location.items():
             if self.combine_city_data:
-                location_dataframes = self.__combine_city_dataframes(location, location_dataframes)
+                location_dataframes = self.__combine_city_dataframes(location_dataframes)
 
             if self.resample_freq:
                 location_dataframes = self.__resample_helper(location_dataframes)
@@ -139,7 +142,7 @@ class Preprocessor:
         grouped_dataframes_date = self.__group_dataframes_by_attribute(dataframes, "date")
 
         for date, date_dataframes in grouped_dataframes_date.items():
-            df = pd.concat(dataframes, ignore_index=True)
+            df = pd.concat(date_dataframes, ignore_index=True)
             df.sort_values("timestamp", inplace=True)
 
             df.attrs["file_name"] = date
