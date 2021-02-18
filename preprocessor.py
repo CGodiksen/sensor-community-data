@@ -46,7 +46,7 @@ class Preprocessor:
         self.__save_preprocessing_settings()
 
         # Grouping the dataframes by sensor id so the location is only found once per sensor.
-        grouped_dataframes_sensor_id = self.__group_dataframes_by_sensor_id()
+        grouped_dataframes_sensor_id = self.__group_dataframes_by_attribute(self.dataframes, "sensor_id")
         sensor_locations = self.__get_sensor_locations(grouped_dataframes_sensor_id)
 
         self.__clean_individual_dataframes()
@@ -134,14 +134,18 @@ class Preprocessor:
             del df["lon"]
             del df["location"]
 
-    @staticmethod
-    def __combine_city_dataframes(location, dataframes):
-        df = pd.concat(dataframes, ignore_index=True)
-        df.sort_values("timestamp", inplace=True)
+    def __combine_city_dataframes(self, dataframes):
+        combined_dataframes = []
+        grouped_dataframes_date = self.__group_dataframes_by_attribute(dataframes, "date")
 
-        df.attrs["file_name"] = location
+        for date, date_dataframes in grouped_dataframes_date.items():
+            df = pd.concat(dataframes, ignore_index=True)
+            df.sort_values("timestamp", inplace=True)
 
-        return [df]
+            df.attrs["file_name"] = date
+            combined_dataframes.append(df)
+
+        return combined_dataframes
 
     def __resample_helper(self, dataframes):
         resampled_dataframes = []
