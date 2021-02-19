@@ -26,11 +26,14 @@ class Preprocessor:
         else:
             self.dataframes = dataframes
 
-        with open("location_cache.json", "r") as cachefile:
-            self.location_cache = json.load(cachefile)
+        with open("location_cache.json", "r") as location_cachefile:
+            self.location_cache = json.load(location_cachefile)
 
         with open("config.json", "r") as configfile:
             self.api_key = json.load(configfile)['maps_api_key']
+
+        with open("lockdown_cache.json", "r") as lockdown_cachefile:
+            self.lockdown_cache = json.load(lockdown_cachefile)
 
     # Parse through all csv files in the given data folder and load them into dataframes.
     def __get_dataframes(self):
@@ -72,9 +75,12 @@ class Preprocessor:
 
             self.__dataframes_to_csv(location, location_dataframes)
 
-        # Saving the potentially changed cache to persistent storage.
-        with open("location_cache.json", "w") as cachefile:
-            json.dump(self.location_cache, cachefile)
+        # Saving the potentially changed caches to persistent storage.
+        with open("location_cache.json", "w") as location_cachefile:
+            json.dump(self.location_cache, location_cachefile)
+
+        with open("lockdown_cache.json", "w") as lockdown_cachefile:
+            json.dump(self.lockdown_cache, lockdown_cachefile)
 
     # Creating a settings file specifying which settings are used for data preprocessing.
     def __save_preprocessing_settings(self):
