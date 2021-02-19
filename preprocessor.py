@@ -190,11 +190,14 @@ class Preprocessor:
             api_url = f"https://covidtrackerapi.bsg.ox.ac.uk/api/v2/stringency/actions/{alpha_3_code}/{df.attrs['date']}"
             api_response = requests.get(api_url).json()
 
-            # Currently the threshold is whenever the country has any stay at home requirements.
-            # The different policy actions and the meaning of the policy values can be seen here:
-            # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
-            if api_response["policyActions"][5]["policyValue_actual"] > 0:
-                df.attrs["lockdown"] = "lockdown"
+            try:
+                # Currently the threshold is whenever the country has any stay at home requirements.
+                # The different policy actions and the meaning of the policy values can be seen here:
+                # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
+                if api_response["policyActions"][5]["policyValue_actual"] > 0:
+                    df.attrs["lockdown"] = "_lockdown"
+            except IndexError:
+                pass
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
@@ -205,7 +208,8 @@ class Preprocessor:
         path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
-            df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
+            lockdown = df.attrs.get("lockdown", "")
+            df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}{lockdown}.csv", index=False)
         logging.info(f"Saved data from {location} to persistent storage")
 
     @staticmethod
