@@ -96,11 +96,11 @@ class Preprocessor:
         sensor_locations = {}
         for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
             df = sensor_id_dataframes[0]
-            location_id = df.at[0, "location"]
+            location_id = str(df.at[0, "location"])
             lat = df.at[0, "lat"]
             lng = df.at[0, "lon"]
 
-            location = self.__get_city_country(str(location_id), lat, lng)
+            location = self.__get_api_value(location_id, self.location_cache, lambda: self.__reverse_geocode(lat, lng))
             logging.info(f"Simplified {location_id}, {lat}, {lng} to {location}")
 
             sensor_locations[sensor_id] = location
@@ -192,7 +192,10 @@ class Preprocessor:
         alpha_3_code = pycountry.countries.lookup(country).alpha_3
 
         for df in dataframes:
-            if self.__check_lockdown_status(df, alpha_3_code):
+            date = df.attrs["date"]
+            key = f"{date}_{alpha_3_code}"
+
+            if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)):
                 df.attrs["lockdown"] = "_lockdown"
 
     # Return true if the country was locked down on the specific date of the data.
@@ -202,13 +205,13 @@ class Preprocessor:
         if key in self.lockdown_cache:
             lockdown_status = self.lockdown_cache[key]
         else:
-            lockdown_status = self.__request_lockdown_status(df.attrs["date"], alpha_3_code)
+            lockdown_status = self.__get_lockdown_status(df.attrs["date"], alpha_3_code)
             self.lockdown_cache[key] = lockdown_status
 
         return lockdown_status
 
     @staticmethod
-    def __request_lockdown_status(date, alpha_3_code):
+    def __get_lockdown_status(date, alpha_3_code):
         # Getting the lockdown status of the specific country on the specific date with the Oxford API.
         api_url = f"https://covidtrackerapi.bsg.ox.ac.uk/api/v2/stringency/actions/{alpha_3_code}/{date}"
         api_response = requests.get(api_url).json()
@@ -236,6 +239,18 @@ class Preprocessor:
             lockdown = df.attrs.get("lockdown", "")
             df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}{lockdown}.csv", index=False)
         logging.info(f"Saved data from {location} to persistent storage")
+
+    # Tries to retrieve value from cache, if not possible then retrieves it with the given callable api_func.
+    @staticmethod
+    def __get_api_value(key, cache, api_func):
+        if key in cache:
+            value = cache[key]
+        else:
+            value = api_func()
+            # Saving the newly retrieved value in the cache.
+            cache[key] = value
+
+        return value
 
     @staticmethod
     def __group_dataframes_by_attribute(dataframes, attribute):
