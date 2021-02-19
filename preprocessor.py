@@ -191,25 +191,29 @@ class Preprocessor:
         country = location.split("_")[-1]
         alpha_3_code = pycountry.countries.lookup(country).alpha_3
 
-        # Getting the lockdown status of the specific country on the specific date with the Oxford covid tracker API.
         for df in dataframes:
             if self.__check_lockdown_status(df, alpha_3_code):
                 df.attrs["lockdown"] = "_lockdown"
 
     # Return true if the country was locked down on the specific date of the data.
-    @staticmethod
-    def __check_lockdown_status(df, alpha_3_code):
-        api_url = f"https://covidtrackerapi.bsg.ox.ac.uk/api/v2/stringency/actions/{alpha_3_code}/{df.attrs['date']}"
-        api_response = requests.get(api_url).json()
+    def __check_lockdown_status(self, df, alpha_3_code):
+        key = f"{df.attrs['date']}_{alpha_3_code}"
 
-        try:
-            # Currently the threshold is whenever the country has any stay at home requirements.
-            # The different policy actions and the meaning of the policy values can be seen here:
-            # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
-            if api_response["policyActions"][5]["policyValue_actual"] > 0:
-                df.attrs["lockdown"] = "_lockdown"
-        except IndexError:
-            pass
+        if key in self.lockdown_cache:
+            return self.lockdown_cache[key]
+        else:
+            # Getting the lockdown status of the specific country on the specific date with the Oxford API.
+            api_url = f"https://covidtrackerapi.bsg.ox.ac.uk/api/v2/stringency/actions/{alpha_3_code}/{df.attrs['date']}"
+            api_response = requests.get(api_url).json()
+
+            try:
+                # Currently the threshold is whenever the country has any stay at home requirements.
+                # The different policy actions and the meaning of the policy values can be seen here:
+                # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
+                if api_response["policyActions"][5]["policyValue_actual"] > 0:
+                    return True
+            except IndexError:
+                return False
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
