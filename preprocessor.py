@@ -9,13 +9,15 @@ import requests
 
 # TODO: Data cleaning
 class Preprocessor:
-    def __init__(self, save_path, dataframes=None, data_folder=None, combine_city_data=False, resample_freq=None):
+    def __init__(self, save_path, dataframes=None, data_folder=None, combine_city_data=False, resample_freq=None,
+                 add_lockdown_info=False):
         self.final_grouped_dataframes = {}
 
         self.save_path = save_path
         self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
+        self.add_lockdown_info = add_lockdown_info
 
         # Manually loading dataframes if they were not given.
         if dataframes is None:
@@ -62,6 +64,9 @@ class Preprocessor:
 
             if self.resample_freq:
                 location_dataframes = self.__resample_helper(location_dataframes)
+
+            if self.add_lockdown_info:
+                self.__add_lockdown_attribute(location, location_dataframes)
 
             self.__dataframes_to_csv(location, location_dataframes)
 
@@ -154,8 +159,9 @@ class Preprocessor:
         resampled_dataframes = []
 
         for df in dataframes:
-            # Extracting the metadata attribute since it is removed when resampling.
+            # Extracting some metadata attributes since they are removed when resampling.
             file_name = df.attrs["file_name"]
+            date = df.attrs["date"]
 
             df = df.resample(self.resample_freq, on="timestamp").mean()
             df.reset_index(level=0, inplace=True)
@@ -165,8 +171,13 @@ class Preprocessor:
 
             resampled_dataframes.append(df)
             df.attrs["file_name"] = file_name
+            df.attrs["date"] = date
 
         return resampled_dataframes
+
+    # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
+    def __add_lockdown_attribute(self, location, dataframes):
+        pass
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
