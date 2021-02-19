@@ -16,7 +16,7 @@ if __name__ == '__main__':
     scraper.start()
 
     preprocessor = Preprocessor(f"{path}_preprocessed", dataframes=scraper.dataframes, combine_city_data=True,
-                                resample_freq="5T")
+                                resample_freq="5T", add_lockdown_info=True)
     preprocessor.start()
 
     data_statistics = DataStatistics(f"{path}_preprocessed", grouped_dataframes=preprocessor.final_grouped_dataframes)

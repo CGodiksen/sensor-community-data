@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import requests
+import pycountry
 
 
 # TODO: Data cleaning
@@ -150,7 +151,10 @@ class Preprocessor:
             df = pd.concat(date_dataframes, ignore_index=True)
             df.sort_values("timestamp", inplace=True)
 
+            # Reassigning needed metadata attributes that were lost when concatenating.
             df.attrs["file_name"] = date
+            df.attrs["date"] = date
+
             combined_dataframes.append(df)
 
         return combined_dataframes
@@ -176,8 +180,21 @@ class Preprocessor:
         return resampled_dataframes
 
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
-    def __add_lockdown_attribute(self, location, dataframes):
-        pass
+    @staticmethod
+    def __add_lockdown_attribute(location, dataframes):
+        country = location.split("_")[-1]
+        alpha_3_code = pycountry.countries.lookup(country).alpha_3
+
+        # Getting the lockdown status of the specific country on the specific date with the Oxford covid tracker API.
+        for df in dataframes:
+            api_url = f"https://covidtrackerapi.bsg.ox.ac.uk/api/v2/stringency/actions/{alpha_3_code}/{df.attrs['date']}"
+            api_response = requests.get(api_url).json()
+
+            # Currently the threshold is whenever the country has any stay at home requirements.
+            # The different policy actions and the meaning of the policy values can be seen here:
+            # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
+            if api_response["policyActions"][5]["policyValue_actual"] > 0:
+                df.attrs["lockdown"] = "lockdown"
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
