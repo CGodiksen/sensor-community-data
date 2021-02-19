@@ -107,19 +107,7 @@ class Preprocessor:
 
         return sensor_locations
 
-    # Return a string with the format "city-country" based on the given latitude and longitude
-    def __get_city_country(self, location_id, lat, lng):
-        # Checking if the location is cached, if not then retrieve it with reverse geocoding.
-        if location_id in self.location_cache:
-            location = self.location_cache[location_id]
-        else:
-            location = self.__reverse_geocode(lat, lng)
-
-            # Saving the newly retrieved location in the cache.
-            self.location_cache[location_id] = location
-
-        return location
-
+    # Return a string with the format "city_country" based on the given latitude and longitude.
     def __reverse_geocode(self, lat, lng):
         logging.info(f"Reverse geocoding {lat}, {lng}")
         maps_api_url = "https://maps.googleapis.com/maps/api/geocode/json?"
