@@ -217,7 +217,7 @@ class Preprocessor:
             # Currently the threshold is whenever the country has any stay at home requirements.
             # The different policy actions and the meaning of the policy values can be seen here:
             # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
-            if api_response["policyActions"][5]["policyValue_actual"] > 0:
+            if api_response["policyActions"][5]["policyvalue_actual"] > 0:
                 return True
             else:
                 return False
