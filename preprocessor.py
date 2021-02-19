@@ -200,20 +200,29 @@ class Preprocessor:
         key = f"{df.attrs['date']}_{alpha_3_code}"
 
         if key in self.lockdown_cache:
-            return self.lockdown_cache[key]
+            lockdown_status = self.lockdown_cache[key]
         else:
-            # Getting the lockdown status of the specific country on the specific date with the Oxford API.
-            api_url = f"https://covidtrackerapi.bsg.ox.ac.uk/api/v2/stringency/actions/{alpha_3_code}/{df.attrs['date']}"
-            api_response = requests.get(api_url).json()
+            lockdown_status = self.__request_lockdown_status(df.attrs["date"], alpha_3_code)
+            self.lockdown_cache[key] = lockdown_status
 
-            try:
-                # Currently the threshold is whenever the country has any stay at home requirements.
-                # The different policy actions and the meaning of the policy values can be seen here:
-                # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
-                if api_response["policyActions"][5]["policyValue_actual"] > 0:
-                    return True
-            except IndexError:
+        return lockdown_status
+
+    @staticmethod
+    def __request_lockdown_status(date, alpha_3_code):
+        # Getting the lockdown status of the specific country on the specific date with the Oxford API.
+        api_url = f"https://covidtrackerapi.bsg.ox.ac.uk/api/v2/stringency/actions/{alpha_3_code}/{date}"
+        api_response = requests.get(api_url).json()
+
+        try:
+            # Currently the threshold is whenever the country has any stay at home requirements.
+            # The different policy actions and the meaning of the policy values can be seen here:
+            # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
+            if api_response["policyActions"][5]["policyValue_actual"] > 0:
+                return True
+            else:
                 return False
+        except IndexError:
+            return False
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
