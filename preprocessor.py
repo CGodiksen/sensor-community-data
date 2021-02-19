@@ -198,18 +198,6 @@ class Preprocessor:
             if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)):
                 df.attrs["lockdown"] = "_lockdown"
 
-    # Return true if the country was locked down on the specific date of the data.
-    def __check_lockdown_status(self, df, alpha_3_code):
-        key = f"{df.attrs['date']}_{alpha_3_code}"
-
-        if key in self.lockdown_cache:
-            lockdown_status = self.lockdown_cache[key]
-        else:
-            lockdown_status = self.__get_lockdown_status(df.attrs["date"], alpha_3_code)
-            self.lockdown_cache[key] = lockdown_status
-
-        return lockdown_status
-
     @staticmethod
     def __get_lockdown_status(date, alpha_3_code):
         # Getting the lockdown status of the specific country on the specific date with the Oxford API.
