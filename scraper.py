@@ -18,16 +18,15 @@ class Scraper:
         self.url = "https://archive.sensor.community/"
         self.dataframes = []
 
-        self.save_path = save_path
         self.start_date = start_date
         self.end_date = end_date
         self.sensor_types = sensor_types
         self.sensor_ids = sensor_ids
         self.remove_indoor = remove_indoor
-        self.save_data = save_data
+        self.save_path = save_path
 
     def start(self):
-        if self.save_data:
+        if self.save_path:
             self.__save_scrape_settings()
 
         # Retrieving the urls containing the wanted data in the online archive.
@@ -92,7 +91,7 @@ class Scraper:
         df.dropna(inplace=True)
 
         # The dataframe will be empty if at least one value was missing in each row.
-        if not df.empty and self.save_data:
+        if not df.empty and self.save_path:
             self.__to_csv_helper(df)
 
         return df
