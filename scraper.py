@@ -26,6 +26,11 @@ class Scraper:
     dataframes : list of pd.dataframe
         Dataframes that represent the run-time version of the scraped data. Use this attribute if the data should be
         used directly in the preprocessor.
+
+    Parameters
+    ----------
+    measurements : list of str
+        The specific sensor measurements that should be collected from the data. All other measurements are removed.
     start_date : datetime.date, optional
         Date object specifying the first day to scrape data from (the default is January 10 2015).
     end_date : datetime.date, optional

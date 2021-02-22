@@ -10,7 +10,7 @@ class DataStatistics:
     Class making it possible to get general statistics about some specific data. Can be used to get an overview of
     the data before processing it further.
 
-    Attributes
+    Parameters
     ----------
     save_path : str
         The path to where the preprocessed data should be saved.

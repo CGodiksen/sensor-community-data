@@ -27,6 +27,9 @@ class Preprocessor:
         from persistent storage on initialization and saved again when preprocessing is done.
     api_key : str
         The API key used to make requests to the Google Maps API, which is used for reverse geocoding.
+
+    Parameters
+    ----------
     save_path : str
         The path to where the preprocessed data should be saved.
     dataframes : list of df.dataframe, optional
