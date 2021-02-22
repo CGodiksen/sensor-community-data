@@ -36,7 +36,7 @@ class Scraper:
         The sensors that should be scraped from (the default is None, meaning all sensor ids will be included).
     remove_indoor : bool, optional
         Flag specifying whether or not to remove data from indoor sensors (the default is True).
-    save_path : Path.path, optional
+    save_path : str, optional
         The path to where the scraped data should be saved (the default is None, meaning the data is not saved).
     """
     def __init__(self, measurements, start_date=date(2015, 10, 1), end_date=date.today() - timedelta(1),
@@ -67,9 +67,10 @@ class Scraper:
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
-        self.save_path.mkdir(parents=True, exist_ok=True)
+        path = Path(self.save_path)
+        path.mkdir(parents=True, exist_ok=True)
 
-        with open(self.save_path.joinpath("settings.json"), "w+") as jsonfile:
+        with open(path.joinpath("settings.json"), "w+") as jsonfile:
             settings = self.__dict__.copy()
             del settings["url"]
 
