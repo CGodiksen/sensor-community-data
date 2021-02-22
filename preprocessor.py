@@ -219,7 +219,8 @@ class Preprocessor:
             date = df.attrs["date"]
             key = f"{date}_{alpha_3_code}"
 
-            if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)):
+            # The current threshold for what is considered a "lockdown" is that there is any stay at home requirements.
+            if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)) > 0:
                 df.attrs["lockdown"] = "_lockdown"
 
     @staticmethod
@@ -229,15 +230,12 @@ class Preprocessor:
         api_response = requests.get(api_url).json()
 
         try:
-            # Currently the threshold is whenever the country has any stay at home requirements.
-            # The different policy actions and the meaning of the policy values can be seen here:
+            # Returning the policy value for the "Stay at home requirements" policy type.
+            # The different policy types and the meaning of the policy values can be seen here:
             # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
-            if api_response["policyActions"][5]["policyvalue_actual"] > 0:
-                return True
-            else:
-                return False
+            return api_response["policyActions"][5]["policyvalue_actual"]
         except IndexError:
-            return False
+            return 0
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
