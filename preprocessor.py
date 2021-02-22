@@ -10,9 +10,51 @@ import pycountry
 
 # TODO: Data cleaning
 class Preprocessor:
+    """
+    Class allowing preprocessing of data scraped from the sensor community data archive. How the data is preprocessed
+    can be configured using the initialization parameters.
+
+    Attributes
+    ----------
+    final_grouped_dataframes : list of df.dataframe
+        Dataframes that represent the run-time version of the preprocessed data. Use this attribute if the data should
+        be used directly elsewhere.
+    location_cache : dict
+        Dictionary from location ids to the city and country connected to the id. The cache is loaded from persistent
+        storage on initialization and saved again when preprocessing is done.
+    lockdown_cache : dict
+        Dictionary from date/country to the lockdown status of the country on the specific date. The cache is loaded
+        from persistent storage on initialization and saved again when preprocessing is done.
+    api_key : str
+        The API key used to make requests to the Google Maps API, which is used for reverse geocoding.
+    save_path : str
+        The path to where the preprocessed data should be saved.
+    dataframes : list of df.dataframe, optional
+        Dataframes that represent the run-time version of the scraped data (the default is None, meaning that the data
+        should be collected from the folder given by the data_folder parameter).
+    data_folder : str, optional
+        The path to the folder containing the data that should be preprocessed (the default is None, meaning that
+        the data is given directly in the dataframes parameter).
+    combine_city_data : bool, optional
+        If true, the data from each city is combined into a single file for each day (the default is False).
+    resample_freq : str, optional
+        The offset string representing target conversion (the default is None, meaning no resampling is done).
+    add_lockdown_info : bool, optional
+        If true, "lockdown" will be suffixed to the file name of the preprocessed data if the specific data was
+        collected during a lockdown (the default is False).
+    """
     def __init__(self, save_path, dataframes=None, data_folder=None, combine_city_data=False, resample_freq=None,
                  add_lockdown_info=False):
         self.final_grouped_dataframes = {}
+
+        with open("location_cache.json", "r") as location_cachefile:
+            self.location_cache = json.load(location_cachefile)
+
+        with open("lockdown_cache.json", "r") as lockdown_cachefile:
+            self.lockdown_cache = json.load(lockdown_cachefile)
+
+        with open("config.json", "r") as configfile:
+            self.api_key = json.load(configfile)['maps_api_key']
 
         self.save_path = save_path
         self.data_folder = data_folder
@@ -25,15 +67,6 @@ class Preprocessor:
             self.dataframes = self.__get_dataframes()
         else:
             self.dataframes = dataframes
-
-        with open("location_cache.json", "r") as location_cachefile:
-            self.location_cache = json.load(location_cachefile)
-
-        with open("config.json", "r") as configfile:
-            self.api_key = json.load(configfile)['maps_api_key']
-
-        with open("lockdown_cache.json", "r") as lockdown_cachefile:
-            self.lockdown_cache = json.load(lockdown_cachefile)
 
     # Parse through all csv files in the given data folder and load them into dataframes.
     def __get_dataframes(self):

@@ -35,7 +35,7 @@ class Scraper:
     sensor_ids : list of int, optional
         The sensors that should be scraped from (the default is None, meaning all sensor ids will be included).
     remove_indoor : bool, optional
-        Flag specifying whether or not to remove data from indoor sensors (the default is True).
+        If true, the scraper removes data from indoor sensors (the default is True).
     save_path : str, optional
         The path to where the scraped data should be saved (the default is None, meaning the data is not saved).
     """
