@@ -12,8 +12,35 @@ from bs4 import BeautifulSoup
 
 # TODO: If the used config matches an existing config file then don't download already downloaded files.
 class Scraper:
-    def __init__(self, save_path, measurements, start_date=date(2015, 10, 1), end_date=date.today(), sensor_types=None,
-                 sensor_ids=None, remove_indoor=True, save_data=True):
+    """
+    Class allowing scraping data from the sensor community data archive. The specific data that should be scraped
+    can be configured using the initialization parameters.
+
+    Attributes
+    ----------
+    columns : list of str
+        Columns that should be kept when retrieving the CSV data. This includes common columns and the wanted
+        measurements.
+    url : str
+        The url of the archive website.
+    dataframes : list of pd.dataframe
+        Dataframes that represent the run-time version of the scraped data. Use this attribute if the data should be
+        used directly in the preprocessor.
+    start_date : datetime.date, optional
+        Date object specifying the first day to scrape data from (the default is January 10 2015).
+    end_date : datetime.date, optional
+        Date object specifying the last to to scrape data from (the default is yesterday).
+    sensor_types : list of str, optional
+        The sensor types that should be scraped from (the default is None, meaning all sensor types will be included).
+    sensor_ids : list of int, optional
+        The sensors that should be scraped from (the default is None, meaning all sensor ids will be included).
+    remove_indoor : bool, optional
+        Flag specifying whether or not to remove data from indoor sensors (the default is True).
+    save_path : Path.path, optional
+        The path to where the scraped data should be saved (the default is None, meaning the data is not saved).
+    """
+    def __init__(self, measurements, start_date=date(2015, 10, 1), end_date=date.today() - timedelta(1),
+                 sensor_types=None, sensor_ids=None, remove_indoor=True, save_path=None):
         self.columns = ["location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
         self.dataframes = []
