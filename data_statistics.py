@@ -6,6 +6,21 @@ import pandas as pd
 
 
 class DataStatistics:
+    """
+    Class making it possible to get general statistics about some specific data. Can be used to get an overview of
+    the data before processing it further.
+
+    Attributes
+    ----------
+    save_path : str
+        The path to where the preprocessed data should be saved.
+    grouped_dataframes : dict, optional
+        Dictionary from locations to dataframes that represent the run-time version of the preprocessed data in the
+        location (the default is None, meaning that the data should be collected from the "data_folder" parameter).
+    data_folder : str, optional
+        The path to the folder containing the data that should be preprocessed (the default is None, meaning that
+        the data is given directly in the "grouped_dataframes" parameter).
+    """
     def __init__(self, save_path, grouped_dataframes=None, data_folder=None):
         self.save_path = save_path
         self.data_folder = data_folder

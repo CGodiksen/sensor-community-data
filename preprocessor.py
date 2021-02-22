@@ -16,9 +16,9 @@ class Preprocessor:
 
     Attributes
     ----------
-    final_grouped_dataframes : list of df.dataframe
-        Dataframes that represent the run-time version of the preprocessed data. Use this attribute if the data should
-        be used directly elsewhere.
+    final_grouped_dataframes : dict
+        Dictionary from locations to dataframes that represent the run-time version of the preprocessed data in the
+        location. Use this attribute if the data should be used directly elsewhere.
     location_cache : dict
         Dictionary from location ids to the city and country connected to the id. The cache is loaded from persistent
         storage on initialization and saved again when preprocessing is done.
@@ -31,10 +31,10 @@ class Preprocessor:
         The path to where the preprocessed data should be saved.
     dataframes : list of df.dataframe, optional
         Dataframes that represent the run-time version of the scraped data (the default is None, meaning that the data
-        should be collected from the folder given by the data_folder parameter).
+        should be collected from the folder given by the "data_folder" parameter).
     data_folder : str, optional
         The path to the folder containing the data that should be preprocessed (the default is None, meaning that
-        the data is given directly in the dataframes parameter).
+        the data is given directly in the "dataframes" parameter).
     combine_city_data : bool, optional
         If true, the data from each city is combined into a single file for each day (the default is False).
     resample_freq : str, optional
