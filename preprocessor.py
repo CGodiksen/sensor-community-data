@@ -46,7 +46,7 @@ class Preprocessor:
         If true, "lockdown" will be suffixed to the file name of the preprocessed data if the specific data was
         collected during a lockdown (the default is False).
     """
-    def __init__(self, save_path, dataframes=None, data_folder=None, combine_city_data=False, resample_freq=None,
+    def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
                  add_lockdown_info=False):
         self.final_grouped_dataframes = {}
 
@@ -60,10 +60,12 @@ class Preprocessor:
             self.api_key = json.load(configfile)['maps_api_key']
 
         self.save_path = save_path
-        self.data_folder = data_folder
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
         self.add_lockdown_info = add_lockdown_info
+
+        if data_folder:
+            self.data_folder = Path(data_folder)
 
         # Manually loading dataframes if they were not given.
         if dataframes is None:
