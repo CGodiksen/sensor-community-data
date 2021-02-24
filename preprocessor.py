@@ -101,16 +101,17 @@ class Preprocessor:
         grouped_dataframes_location = self.__group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations)
 
         for location, location_dataframes in grouped_dataframes_location.items():
-            if self.combine_city_data:
-                location_dataframes = self.__combine_city_dataframes(location_dataframes)
+            if location:
+                if self.combine_city_data:
+                    location_dataframes = self.__combine_city_dataframes(location_dataframes)
 
-            if self.resample_freq:
-                location_dataframes = self.__resample_helper(location_dataframes)
+                if self.resample_freq:
+                    location_dataframes = self.__resample_helper(location_dataframes)
 
-            if self.add_lockdown_info:
-                self.__add_lockdown_attribute(location, location_dataframes)
+                if self.add_lockdown_info:
+                    self.__add_lockdown_attribute(location, location_dataframes)
 
-            self.__dataframes_to_csv(location, location_dataframes)
+                self.__dataframes_to_csv(location, location_dataframes)
 
         # Saving the potentially changed caches to persistent storage.
         with open("location_cache.json", "w") as location_cachefile:

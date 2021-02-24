@@ -10,11 +10,11 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     path = f"data/{int(time.time())}"
 
-    scraper = Scraper(["P1", "P2"], start_date=date(2016, 12, 31), end_date=date(2018, 1, 1), sensor_types=["sds011"], sensor_ids=[140])
+    scraper = Scraper(["P1", "P2"], start_date=date(2017, 7, 3), end_date=date(2017, 7, 5), sensor_types=["sds011"])
     scraper.start()
 
     preprocessor = Preprocessor(f"{path}_preprocessed", dataframes=scraper.dataframes, combine_city_data=True,
-                                resample_freq="5T", add_lockdown_info=True)
+                                resample_freq="60T", add_lockdown_info=True)
     preprocessor.start()
 
     data_statistics = DataStatistics(f"{path}_preprocessed", grouped_dataframes=preprocessor.final_grouped_dataframes)
