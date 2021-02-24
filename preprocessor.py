@@ -134,9 +134,9 @@ class Preprocessor:
         for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
             df = sensor_id_dataframes[0]
 
-            location_id = str(df.at[0, "location"])
-            lat = df.at[0, "lat"]
-            lng = df.at[0, "lon"]
+            location_id = str(df["location"].iloc[0])
+            lat = df["lat"].iloc[0]
+            lng = df["lon"].iloc[0]
 
             location = self.__get_api_value(location_id, self.location_cache, lambda: self.__reverse_geocode(lat, lng))
             logging.info(f"Simplified {location_id}, {lat}, {lng} to {location}")
