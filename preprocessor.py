@@ -98,8 +98,7 @@ class Preprocessor:
 
         self.__clean_individual_dataframes()
 
-        grouped_dataframes_location = self.__group_dataframes_by_location(grouped_dataframes_sensor_id,
-                                                                          sensor_locations)
+        grouped_dataframes_location = self.__group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations)
 
         for location, location_dataframes in grouped_dataframes_location.items():
             if self.combine_city_data:
@@ -134,6 +133,7 @@ class Preprocessor:
         sensor_locations = {}
         for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
             df = sensor_id_dataframes[0]
+
             location_id = str(df.at[0, "location"])
             lat = df.at[0, "lat"]
             lng = df.at[0, "lon"]
@@ -215,15 +215,19 @@ class Preprocessor:
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
         country = location.split("_")[-1]
-        alpha_3_code = pycountry.countries.lookup(country).alpha_3
 
-        for df in dataframes:
-            date = df.attrs["date"]
-            key = f"{date}_{alpha_3_code}"
+        try:
+            alpha_3_code = pycountry.countries.lookup(country).alpha_3
 
-            # The current threshold for what is considered a "lockdown" is that there is any stay at home requirements.
-            if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)) > 0:
-                df.attrs["lockdown"] = "_lockdown"
+            for df in dataframes:
+                date = df.attrs["date"]
+                key = f"{date}_{alpha_3_code}"
+
+                # The current threshold for what is considered a "lockdown" (any stay at home requirements).
+                if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)) > 0:
+                    df.attrs["lockdown"] = "_lockdown"
+        except LookupError:
+            logging.warning(f"No alpha 3 code could be found for {country}")
 
     @staticmethod
     def __get_lockdown_status(date, alpha_3_code):

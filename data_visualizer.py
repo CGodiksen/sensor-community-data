@@ -20,4 +20,4 @@ class DataVisualizer:
 
 
 test = DataVisualizer()
-test.get_line_chart("data/1614077421_preprocessed/Stuttgart_Germany")
+test.get_line_chart("data/1614173522_preprocessed/Stuttgart_Germany")
