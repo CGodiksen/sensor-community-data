@@ -69,6 +69,7 @@ class Scraper:
         file_urls = list(chain.from_iterable(file_urls))
 
         self.dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
+        self.dataframes = [df for df in self.dataframes if not df.empty]
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):

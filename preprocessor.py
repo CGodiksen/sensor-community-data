@@ -102,6 +102,7 @@ class Preprocessor:
 
         for location, location_dataframes in grouped_dataframes_location.items():
             if location:
+                logging.info(f"Processing data from {location}")
                 if self.combine_city_data:
                     location_dataframes = self.__combine_city_dataframes(location_dataframes)
 
