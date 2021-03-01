@@ -247,8 +247,11 @@ class Preprocessor:
         # Saving the dataframes in an attribute so they can be used directly, outside preprocessing.
         self.final_grouped_dataframes[location] = dataframes
 
-        path = Path(f"{self.save_path}/{location.replace('/', '-')}/")
-        path.mkdir(parents=True, exist_ok=True)
+        if self.combine_city_data:
+            path = Path(f"{self.save_path}")
+        else:
+            path = Path(f"{self.save_path}/{location.replace('/', '-')}/")
+            path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
             df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
