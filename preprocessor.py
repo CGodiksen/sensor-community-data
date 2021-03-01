@@ -16,9 +16,6 @@ class Preprocessor:
 
     Attributes
     ----------
-    final_grouped_dataframes : dict
-        Dictionary from locations to dataframes that represent the run-time version of the preprocessed data in the
-        location. Use this attribute if the data should be used directly elsewhere.
     location_cache : dict
         Dictionary from location ids to the city and country connected to the id. The cache is loaded from persistent
         storage on initialization and saved again when preprocessing is done.
@@ -48,8 +45,6 @@ class Preprocessor:
     """
     def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
                  add_lockdown_info=False):
-        self.final_grouped_dataframes = {}
-
         with open("location_cache.json", "r") as location_cachefile:
             self.location_cache = json.load(location_cachefile)
 
@@ -250,9 +245,6 @@ class Preprocessor:
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
-        # Saving the dataframes in an attribute so they can be used directly, outside preprocessing.
-        self.final_grouped_dataframes[location] = dataframes
-
         if self.combine_city_data:
             path = Path(f"{self.save_path}")
         else:
