@@ -103,14 +103,14 @@ class Preprocessor:
         for location, location_dataframes in grouped_dataframes_location.items():
             if location:
                 logging.info(f"Processing data from {location}")
+                if self.add_lockdown_info:
+                    self.__add_lockdown_attribute(location, location_dataframes)
+
                 if self.combine_city_data:
-                    location_dataframes = self.__combine_city_dataframes(location_dataframes)
+                    location_dataframes = self.__combine_city_dataframes(location, location_dataframes)
 
                 if self.resample_freq:
                     location_dataframes = self.__resample_helper(location_dataframes)
-
-                if self.add_lockdown_info:
-                    self.__add_lockdown_attribute(location, location_dataframes)
 
                 self.__dataframes_to_csv(location, location_dataframes)
 
@@ -182,21 +182,14 @@ class Preprocessor:
             del df["lon"]
             del df["location"]
 
-    def __combine_city_dataframes(self, dataframes):
-        combined_dataframes = []
-        grouped_dataframes_date = self.__group_dataframes_by_attribute(dataframes, "date")
+    @staticmethod
+    def __combine_city_dataframes(location, city_dataframes):
+        df = pd.concat(city_dataframes, ignore_index=True)
+        df.sort_values("timestamp", inplace=True)
 
-        for date, date_dataframes in grouped_dataframes_date.items():
-            df = pd.concat(date_dataframes, ignore_index=True)
-            df.sort_values("timestamp", inplace=True)
+        df.attrs["file_name"] = location
 
-            # Reassigning needed metadata attributes that were lost when concatenating.
-            df.attrs["file_name"] = date
-            df.attrs["date"] = date
-
-            combined_dataframes.append(df)
-
-        return combined_dataframes
+        return [df]
 
     def __resample_helper(self, dataframes):
         resampled_dataframes = []
@@ -204,7 +197,6 @@ class Preprocessor:
         for df in dataframes:
             # Extracting some metadata attributes since they are removed when resampling.
             file_name = df.attrs["file_name"]
-            date = df.attrs["date"]
 
             df = df.resample(self.resample_freq, on="timestamp").mean()
             df.reset_index(level=0, inplace=True)
@@ -214,7 +206,6 @@ class Preprocessor:
 
             resampled_dataframes.append(df)
             df.attrs["file_name"] = file_name
-            df.attrs["date"] = date
 
         return resampled_dataframes
 
