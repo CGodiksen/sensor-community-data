@@ -1,6 +1,6 @@
 import json
 import logging
-import os
+from pathlib import Path
 
 import pandas as pd
 
@@ -23,7 +23,7 @@ class DataStatistics:
     """
     def __init__(self, save_path, grouped_dataframes=None, data_folder=None):
         self.save_path = save_path
-        self.data_folder = data_folder
+        self.data_folder = Path(data_folder)
 
         # Manually loading grouped dataframes if they were not given.
         if grouped_dataframes is None:
@@ -35,9 +35,11 @@ class DataStatistics:
     def __load_grouped_data(self):
         grouped_dataframes = {}
 
-        for folder in next(os.walk(self.data_folder))[1]:
-            path = f"{self.data_folder}/{folder}/"
-            grouped_dataframes[folder] = [pd.read_csv(f"{path}/{file}") for file in os.listdir(path)]
+        for file in self.data_folder.rglob("*.csv"):
+            df = pd.read_csv(file)
+            df = df.drop(["lockdown"], axis=1, errors="ignore")
+
+            grouped_dataframes[file.stem[:-4]] = df
 
         return grouped_dataframes
 
@@ -75,7 +77,7 @@ class DataStatistics:
 
         measurement_columns = total_dataframe.columns.values.tolist()
         measurement_columns.remove("timestamp")
-        measurement_columns.remove("lockdown")
+
         for measurement in measurement_columns:
             measurement_statistics[measurement] = dict(zip(statistic_names, description[measurement]))
 
@@ -85,12 +87,10 @@ class DataStatistics:
         location_statistics = {
             "location_count": len(self.grouped_dataframes)
         }
-        for location, location_dataframes in self.grouped_dataframes.items():
-            total_dataframe = pd.concat(location_dataframes, ignore_index=True)
-
+        for location, location_dataframe in self.grouped_dataframes.items():
             location_statistics[location] = {
-                "time_frame": self.__get_time_frame(total_dataframe),
-                **self.__get_measurement_statistics(total_dataframe),
+                "time_frame": self.__get_time_frame(location_dataframe),
+                **self.__get_measurement_statistics(location_dataframe),
             }
 
         return location_statistics
@@ -100,6 +100,6 @@ class DataStatistics:
     def __combine_dict_values(dictionary):
         combined = []
         for key, value in dictionary.items():
-            combined.extend(value)
+            combined.append(value)
 
         return combined
