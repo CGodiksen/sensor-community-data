@@ -227,7 +227,9 @@ class Preprocessor:
 
                 # The current threshold for what is considered a "lockdown" (any stay at home requirements).
                 if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)) > 0:
-                    df.attrs["lockdown"] = "_lockdown"
+                    df["lockdown"] = 1
+                else:
+                    df["lockdown"] = 0
         except LookupError:
             logging.warning(f"No alpha 3 code could be found for {country}")
 
@@ -254,8 +256,7 @@ class Preprocessor:
         path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
-            lockdown = df.attrs.get("lockdown", "")
-            df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}{lockdown}.csv", index=False)
+            df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
         logging.info(f"Saved data from {location} to persistent storage")
 
     # Tries to retrieve value from cache, if not possible then retrieves it with the given callable api_func.
