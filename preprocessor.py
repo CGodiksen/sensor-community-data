@@ -182,33 +182,6 @@ class Preprocessor:
             del df["lon"]
             del df["location"]
 
-    @staticmethod
-    def __combine_city_dataframes(location, city_dataframes):
-        df = pd.concat(city_dataframes, ignore_index=True)
-        df.sort_values("timestamp", inplace=True)
-
-        df.attrs["file_name"] = location
-
-        return [df]
-
-    def __resample_helper(self, dataframes):
-        resampled_dataframes = []
-
-        for df in dataframes:
-            # Extracting some metadata attributes since they are removed when resampling.
-            file_name = df.attrs["file_name"]
-
-            df = df.resample(self.resample_freq, on="timestamp").mean()
-            df.reset_index(level=0, inplace=True)
-
-            # Rounding since resampling with mean results in too many decimals for the measurements.
-            df = df.round(2)
-
-            resampled_dataframes.append(df)
-            df.attrs["file_name"] = file_name
-
-        return resampled_dataframes
-
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
         country = location.split("_")[-1]
@@ -241,6 +214,33 @@ class Preprocessor:
             return api_response["policyActions"][5]["policyvalue_actual"]
         except IndexError:
             return 0
+
+    @staticmethod
+    def __combine_city_dataframes(location, city_dataframes):
+        df = pd.concat(city_dataframes, ignore_index=True)
+        df.sort_values("timestamp", inplace=True)
+
+        df.attrs["file_name"] = location
+
+        return [df]
+
+    def __resample_helper(self, dataframes):
+        resampled_dataframes = []
+
+        for df in dataframes:
+            # Extracting some metadata attributes since they are removed when resampling.
+            file_name = df.attrs["file_name"]
+
+            df = df.resample(self.resample_freq, on="timestamp").mean()
+            df.reset_index(level=0, inplace=True)
+
+            # Rounding since resampling with mean results in too many decimals for the measurements.
+            df = df.round(2)
+
+            resampled_dataframes.append(df)
+            df.attrs["file_name"] = file_name
+
+        return resampled_dataframes
 
     # Writing each dataframe to the final folder structure.
     def __dataframes_to_csv(self, location, dataframes):
