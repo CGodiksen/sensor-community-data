@@ -192,14 +192,20 @@ class Preprocessor:
             for df in dataframes:
                 date = df.attrs["date"]
                 key = f"{date}_{alpha_3_code}"
+                lockdown = 0
 
-                # The current threshold for what is considered a "lockdown" (any stay at home requirements).
-                if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)) > 0:
-                    df["lockdown"] = 1
-                else:
-                    df["lockdown"] = 0
+                # 2020-01-01 was the first day with any restrictions so no reason to call API if date is before that.
+                if date >= "2020-01-01":
+                    # The current threshold for what is considered a "lockdown" (any stay at home requirements).
+                    if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)) > 0:
+                        lockdown = 1
+
+                df["lockdown"] = lockdown
+
         except LookupError:
             logging.warning(f"No alpha 3 code could be found for {country}")
+            for df in dataframes:
+                df["lockdown"] = 0
 
     @staticmethod
     def __get_lockdown_status(date, alpha_3_code):
