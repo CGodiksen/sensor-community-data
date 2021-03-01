@@ -75,6 +75,7 @@ class DataStatistics:
 
         measurement_columns = total_dataframe.columns.values.tolist()
         measurement_columns.remove("timestamp")
+        measurement_columns.remove("lockdown")
         for measurement in measurement_columns:
             measurement_statistics[measurement] = dict(zip(statistic_names, description[measurement]))
 
