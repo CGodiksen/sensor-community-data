@@ -39,12 +39,12 @@ class Preprocessor:
         The path to the folder containing the data that should be preprocessed (the default is None, meaning that
         the data is given directly in the "dataframes" parameter).
     combine_city_data : bool, optional
-        If true, the data from each city is combined into a single file for each day (the default is False).
+        If true, the data from each city is combined into a single file (the default is False).
     resample_freq : str, optional
         The offset string representing target conversion (the default is None, meaning no resampling is done).
     add_lockdown_info : bool, optional
-        If true, "lockdown" will be suffixed to the file name of the preprocessed data if the specific data was
-        collected during a lockdown (the default is False).
+        If true, a column is added to the data with a 1 if the specific row was collected during a lockdown and a 0
+        otherwise (the default is False).
     """
     def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
                  add_lockdown_info=False):
