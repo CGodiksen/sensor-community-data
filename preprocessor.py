@@ -147,7 +147,7 @@ class Preprocessor:
             location = self.__get_api_value(location_id, self.location_cache, lambda: self.__reverse_geocode(lat, lng))
             logging.info(f"Simplified {location_id}, {lat}, {lng} to {location}")
 
-            sensor_locations[sensor_id] = location
+            sensor_locations[sensor_id] = location.replace("/", "-")
 
         return sensor_locations
 
@@ -250,7 +250,7 @@ class Preprocessor:
         if self.combine_city_data:
             path = Path(f"{self.save_path}")
         else:
-            path = Path(f"{self.save_path}/{location.replace('/', '-')}/")
+            path = Path(f"{self.save_path}/{location}/")
             path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
