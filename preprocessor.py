@@ -127,7 +127,11 @@ class Preprocessor:
         path.mkdir(parents=True, exist_ok=True)
 
         with open(path.joinpath("settings.json"), "w+") as jsonfile:
-            settings = {"combine_city_data": self.combine_city_data, "resample_frequency": self.resample_freq}
+            settings = {
+                "combine_city_data": self.combine_city_data,
+                "resample_frequency": self.resample_freq,
+                "add_lockdown_info": self.add_lockdown_info
+            }
             json.dump(settings, jsonfile, default=str)
 
     # Return a dict with key-value pairs of the format "sensor_id-location".
