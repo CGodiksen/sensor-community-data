@@ -60,17 +60,20 @@ class Scraper:
         self.save_path = save_path
         self.preprocessor = preprocessor
 
+    def start(self):
         if self.save_path:
             self.__save_scrape_settings()
 
         # Retrieving the urls containing the wanted data in the online archive.
         date_urls = self.__get_date_urls()
-        self.file_urls = Pool().map(self.__get_file_urls, date_urls)
+        daily_file_urls = Pool().map(self.__get_file_urls, date_urls)
 
-    def start(self):
-        for day_file_urls in self.file_urls:
-            dataframes = Pool().map(lambda file_url: self.__process_file(file_url), day_file_urls)
-            dataframes = [df for df in self.dataframes if not df.empty]
+        for file_urls in daily_file_urls:
+            dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
+            dataframes = [df for df in dataframes if not df.empty]
+
+            self.preprocessor.dataframes = dataframes
+            self.preprocessor.start()
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
