@@ -32,10 +32,10 @@ class Preprocessor:
         The path to where the preprocessed data should be saved.
     dataframes : list of df.dataframe, optional
         Dataframes that represent the run-time version of the scraped data (the default is None, meaning that the data
-        should be collected from the folder given by the "data_folder" parameter).
+        should be collected from the data_folder parameter or be piped directly from the scraper).
     data_folder : str, optional
         The path to the folder containing the data that should be preprocessed (the default is None, meaning that
-        the data is given directly in the "dataframes" parameter).
+        the data is given directly in the "dataframes" parameter or piped from the scraper).
     combine_city_data : bool, optional
         If true, the data from each city is combined into a single file (the default is False).
     resample_freq : str, optional
@@ -60,7 +60,7 @@ class Preprocessor:
         self.resample_freq = resample_freq
         self.add_lockdown_info = add_lockdown_info
 
-        # Manually loading dataframes if they were not given.
+        # Manually loading dataframes if a data location was given.
         if data_folder:
             self.data_folder = Path(data_folder)
             self.dataframes = self.__get_dataframes()
