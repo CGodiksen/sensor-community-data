@@ -60,11 +60,9 @@ class Preprocessor:
         self.resample_freq = resample_freq
         self.add_lockdown_info = add_lockdown_info
 
+        # Manually loading dataframes if they were not given.
         if data_folder:
             self.data_folder = Path(data_folder)
-
-        # Manually loading dataframes if they were not given.
-        if dataframes is None:
             self.dataframes = self.__get_dataframes()
         else:
             self.dataframes = dataframes
