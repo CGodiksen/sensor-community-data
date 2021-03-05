@@ -68,12 +68,21 @@ class Scraper:
         date_urls = self.__get_date_urls()
         daily_file_urls = Pool().map(self.__get_file_urls, date_urls)
 
-        for file_urls in daily_file_urls:
-            dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
-            dataframes = [df for df in dataframes if not df.empty]
+        # If a preprocessor is given we pipe the data directly into the preprocessor daily.
+        if self.preprocessor:
+            for file_urls in daily_file_urls:
+                dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
+                dataframes = [df for df in dataframes if not df.empty]
 
-            self.preprocessor.dataframes = dataframes
-            self.preprocessor.start()
+                self.preprocessor.dataframes = dataframes
+                self.preprocessor.start()
+        # If not, we scrape all the data concurrently and make it available to use through the dataframes attribute.
+        else:
+            # Flattening the list of lists.
+            file_urls = list(chain.from_iterable(daily_file_urls))
+
+            self.dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
+            self.dataframes = [df for df in self.dataframes if not df.empty]
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
