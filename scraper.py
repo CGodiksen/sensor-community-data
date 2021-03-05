@@ -43,9 +43,11 @@ class Scraper:
         If true, the scraper removes data from indoor sensors (the default is True).
     save_path : str, optional
         The path to where the scraped data should be saved (the default is None, meaning the data is not saved).
+    preprocessor : :class:`Preprocessor`, optional
+        The preprocessor to pipe the data into (the default is None, meaning the data is not piped anywhere).
     """
     def __init__(self, measurements, start_date=date(2015, 10, 1), end_date=date.today() - timedelta(1),
-                 sensor_types=None, sensor_ids=None, remove_indoor=True, save_path=None):
+                 sensor_types=None, sensor_ids=None, remove_indoor=True, save_path=None, preprocessor=None):
         self.columns = ["location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
         self.dataframes = []
@@ -56,20 +58,19 @@ class Scraper:
         self.sensor_ids = sensor_ids
         self.remove_indoor = remove_indoor
         self.save_path = save_path
+        self.preprocessor = preprocessor
 
-    def start(self):
         if self.save_path:
             self.__save_scrape_settings()
 
         # Retrieving the urls containing the wanted data in the online archive.
         date_urls = self.__get_date_urls()
-        file_urls = Pool().map(self.__get_file_urls, date_urls)
+        self.file_urls = Pool().map(self.__get_file_urls, date_urls)
 
-        # Flattening the list of lists.
-        file_urls = list(chain.from_iterable(file_urls))
-
-        self.dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
-        self.dataframes = [df for df in self.dataframes if not df.empty]
+    def start(self):
+        for day_file_urls in self.file_urls:
+            dataframes = Pool().map(lambda file_url: self.__process_file(file_url), day_file_urls)
+            dataframes = [df for df in self.dataframes if not df.empty]
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
