@@ -1,3 +1,4 @@
+import os
 import collections
 import json
 import logging
@@ -252,7 +253,13 @@ class Preprocessor:
             path.mkdir(parents=True, exist_ok=True)
 
         for df in dataframes:
-            df.to_csv(f"{path.as_posix()}/{df.attrs['file_name']}.csv", index=False)
+            file_path = f"{path.as_posix()}/{df.attrs['file_name']}.csv"
+
+            # Appending to the data if the file already exists.
+            if not os.path.isfile(file_path):
+                df.to_csv(file_path, index=False, header="column_names")
+            else:
+                df.to_csv(file_path, mode="a", index=False, header=False)
         logging.info(f"Saved data from {location} to persistent storage")
 
     # Tries to retrieve value from cache, if not possible then retrieves it with the given callable api_func.
