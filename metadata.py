@@ -17,12 +17,7 @@ from scraper import Scraper
 def plot_sensor_location_distribution(sensor_types, date, data_folder=None):
     """Plots a heatmap of how the sensors are distributed worldwide on the given date."""
     if not data_folder:
-        data_folder = f"data/{int(time.time())}_preprocessed"
-
-        # Scrape and preprocess the data for the single day without combining city data.
-        preprocessor = Preprocessor(data_folder)
-        scraper = Scraper([], start_date=date, end_date=date, sensor_types=sensor_types, preprocessor=preprocessor)
-        scraper.start()
+        data_folder = __location_data_scrape(sensor_types, date)
 
     # Go through each folder, count the number of files in the folder and add it to the count of the country.
     country_sensor_count = defaultdict(int)
@@ -49,7 +44,7 @@ def plot_sensor_location_distribution(sensor_types, date, data_folder=None):
         xanchor="right", x=1.03,
         ticks="outside",
         tickfont=dict(size=14),
-        tickvals=[0.7, 1.35, 2, 2.65, 3.3],
+        tickvals=np.log10([1000, 2000, 3000, 4000, 5000]),
         ticktext=["1000", "2000", "3000", "4000", "5000"],
     ))
     fig.show()
@@ -76,6 +71,18 @@ def plot_sensor_count(sensor_types, start_date, end_date):
     plt.xticks(rotation=45)
 
     plt.show()
+
+
+# Perform a data scrape from the given date that allows for sensor location analysis.
+def __location_data_scrape(date, sensor_types):
+    data_folder = f"data/{int(time.time())}_preprocessed"
+
+    # Scrape and preprocess the data for the single day without combining city data.
+    preprocessor = Preprocessor(data_folder)
+    scraper = Scraper([], start_date=date, end_date=date, sensor_types=sensor_types, preprocessor=preprocessor)
+    scraper.start()
+
+    return data_folder
 
 
 # plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
