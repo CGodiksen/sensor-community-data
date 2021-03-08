@@ -9,6 +9,7 @@ from datetime import date, timedelta
 import matplotlib.pyplot as plt
 import plotly.express as px
 import numpy as np
+import pycountry_convert as pc
 
 from preprocessor import Preprocessor
 from scraper import Scraper
@@ -73,6 +74,27 @@ def plot_sensor_count(sensor_types, start_date, end_date):
     plt.show()
 
 
+def sensor_location_continent_info(sensor_types, date, data_folder=None):
+    """Print information about how the sensors are distributed into continents."""
+    if not data_folder:
+        data_folder = __location_data_scrape(sensor_types, date)
+
+    continent_sensor_count = defaultdict(int)
+    for folder in next(os.walk(data_folder))[1]:
+        country = folder.split("_")[1]
+        try:
+            country_alpha2 = pc.country_name_to_country_alpha2(country)
+
+            continent_code = pc.country_alpha2_to_continent_code(country_alpha2)
+            continent_name = pc.convert_continent_code_to_continent_name(continent_code)
+
+            continent_sensor_count[continent_name] += len(os.listdir(f"{data_folder}/{folder}/"))
+        except KeyError:
+            print(f"Could not find continent for {country}")
+
+    print(continent_sensor_count)
+    
+
 # Perform a data scrape from the given date that allows for sensor location analysis.
 def __location_data_scrape(date, sensor_types):
     data_folder = f"data/{int(time.time())}_preprocessed"
@@ -86,4 +108,5 @@ def __location_data_scrape(date, sensor_types):
 
 
 # plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
-plot_sensor_location_distribution(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
+# plot_sensor_location_distribution(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
+sensor_location_continent_info(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
