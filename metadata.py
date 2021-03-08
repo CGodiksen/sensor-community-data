@@ -61,7 +61,10 @@ def plot_sensor_count(sensor_types, start_date, end_date):
     monthly_sensor_count = []
     for date in dates:
         scraper = Scraper([], start_date=date, end_date=date, sensor_types=sensor_types)
-        monthly_sensor_count.append(len(scraper.get_file_urls(scraper.get_date_urls()[0])))
+
+        month_sensor_count = len(scraper.get_file_urls(scraper.get_date_urls()[0]))
+        monthly_sensor_count.append(month_sensor_count)
+        print(f"{date.strftime('%Y-%m')}: {month_sensor_count}")
 
     fig, ax = plt.subplots()
     ax.plot(dates, monthly_sensor_count)
@@ -112,4 +115,4 @@ def __location_data_scrape(date, sensor_types):
 
 plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
 # plot_sensor_location_distribution(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
-#sensor_location_continent_info(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
+# sensor_location_continent_info(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
