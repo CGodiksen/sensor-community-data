@@ -27,11 +27,12 @@ def plot_sensor_count(sensor_types, start_date, end_date):
     fig, ax = plt.subplots()
     ax.plot(dates, monthly_sensor_count)
 
-    start_date_str = start_date.strftime("%Y-%m")
-    end_date_str = end_date.strftime("%Y-%m")
-    ax.set(xlabel='Date', ylabel='Sensor Count', title=f"Monthly sensor count from {start_date_str} to {end_date_str}")
+    start_date_str = dates[0].strftime("%Y-%m")
+    end_date_str = dates[-1].strftime("%Y-%m")
+    ax.set(ylabel='Sensor Count', title=f"Sensor count from {start_date_str} to {end_date_str}")
+    plt.xticks(rotation=45)
 
     plt.show()
 
 
-plot_sensor_count(["sds011"], date(2017, 1, 1), date(2017, 12, 31))
+plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
