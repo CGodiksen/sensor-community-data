@@ -65,8 +65,8 @@ class Scraper:
             self.__save_scrape_settings()
 
         # Retrieving the urls containing the wanted data in the online archive.
-        date_urls = self.__get_date_urls()
-        daily_file_urls = Pool().map(self.__get_file_urls, date_urls)
+        date_urls = self.get_date_urls()
+        daily_file_urls = Pool().map(self.get_file_urls, date_urls)
 
         # If a preprocessor is given we pipe the data directly into the preprocessor daily.
         if self.preprocessor:
@@ -96,13 +96,13 @@ class Scraper:
             json.dump(settings, jsonfile, default=str)
 
     # Return list of urls corresponding to the days which should be scraped from.
-    def __get_date_urls(self):
+    def get_date_urls(self):
         delta = self.end_date - self.start_date
 
         return [f"{self.url}{str(self.start_date + timedelta(days=i))}" for i in range(delta.days + 1)]
 
     # Return a list of the files that should be scraped, gathered from the data url.
-    def __get_file_urls(self, date_url):
+    def get_file_urls(self, date_url):
         logging.info(f"Retrieving file urls from {date_url}")
         date_html = requests.get(date_url).text
         soup = BeautifulSoup(date_html, features="html.parser")
