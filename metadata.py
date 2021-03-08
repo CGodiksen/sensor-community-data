@@ -93,7 +93,11 @@ def sensor_location_continent_info(sensor_types, date, data_folder=None):
             print(f"Could not find continent for {country}")
 
     print(continent_sensor_count)
-    
+
+    total = sum(continent_sensor_count.values())
+    for continent, sensor_count in continent_sensor_count.items():
+        print(f"{continent}: {(sensor_count / total) * 100}% of total")
+
 
 # Perform a data scrape from the given date that allows for sensor location analysis.
 def __location_data_scrape(date, sensor_types):
