@@ -8,6 +8,7 @@ from datetime import date, timedelta
 
 import matplotlib.pyplot as plt
 import plotly.express as px
+import numpy as np
 
 from preprocessor import Preprocessor
 from scraper import Scraper
@@ -31,15 +32,26 @@ def plot_sensor_location_distribution(sensor_types, date, data_folder=None):
 
     # The query year does not matter, it is only used for getting a dataframe that can be added to.
     df = px.data.gapminder().query("year==2007")
-    df["Sensor count"] = 0
+    df["sensor_count"] = 0
     for i, row in df.iterrows():
-        df.at[i, "Sensor count"] = country_sensor_count.get(row["country"])
+        df.at[i, "sensor_count"] = country_sensor_count.get(row["country"])
 
     # Plot the modified dataframe in a choropleth map.
     fig = px.choropleth(df, locations="iso_alpha",
-                        color="Sensor count",
+                        color=np.log10(df["sensor_count"]),
                         hover_name="country",
                         color_continuous_scale=px.colors.sequential.Viridis)
+
+    fig.update_layout(coloraxis_colorbar=dict(
+        title=dict(text="Sensor count", font=dict(size=16)),
+        thicknessmode="pixels", thickness=60,
+        yanchor="top", y=1,
+        xanchor="right", x=1.03,
+        ticks="outside",
+        tickfont=dict(size=14),
+        tickvals=[0.7, 1.35, 2, 2.65, 3.3],
+        ticktext=["1000", "2000", "3000", "4000", "5000"],
+    ))
     fig.show()
 
 
