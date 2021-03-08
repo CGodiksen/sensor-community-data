@@ -22,7 +22,15 @@ def plot_sensor_location_distribution(sensor_types, date, data_folder=None):
         scraper = Scraper([], start_date=date, end_date=date, sensor_types=sensor_types, preprocessor=preprocessor)
         scraper.start()
 
+    # Go through each folder, count the number of files in the folder and add it to the count of the country.
+    country_sensor_count = defaultdict(int)
+    for folder in next(os.walk(data_folder))[1]:
+        country = folder.split("_")[1]
+        country_sensor_count[country] += len(os.listdir(f"{data_folder}/{folder}/"))
+
+    print(country_sensor_count)
     # Plot the resulting dictionary in a choropleth map.
+
 
 def plot_sensor_count(sensor_types, start_date, end_date):
     """Plots a line chart showing how many sensors there were each month between the given dates."""
@@ -48,4 +56,4 @@ def plot_sensor_count(sensor_types, start_date, end_date):
 
 
 # plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
-plot_sensor_location_distribution(["sds011"], date(2017, 6, 1), "data/1615210461_preprocessed")
+plot_sensor_location_distribution(["sds011"], date(2017, 6, 1), "data/1615210831_preprocessed")
