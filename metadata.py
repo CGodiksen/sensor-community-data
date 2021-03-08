@@ -66,11 +66,10 @@ def plot_sensor_count(sensor_types, start_date, end_date):
     fig, ax = plt.subplots()
     ax.plot(dates, monthly_sensor_count)
 
-    start_date_str = dates[0].strftime("%Y-%m")
-    end_date_str = dates[-1].strftime("%Y-%m")
-    ax.set(ylabel='Sensor Count', title=f"Sensor count from {start_date_str} to {end_date_str}")
+    ax.set(ylabel='Sensor Count')
     plt.xticks(rotation=45)
 
+    plt.savefig("data/sensor_count.pdf")
     plt.show()
 
 
@@ -111,6 +110,6 @@ def __location_data_scrape(date, sensor_types):
     return data_folder
 
 
-# plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
+plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
 # plot_sensor_location_distribution(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
-sensor_location_continent_info(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
+#sensor_location_continent_info(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
