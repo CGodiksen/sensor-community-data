@@ -6,8 +6,6 @@ import time
 from collections import defaultdict
 from datetime import date, timedelta
 
-import pycountry
-import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 
@@ -33,15 +31,15 @@ def plot_sensor_location_distribution(sensor_types, date, data_folder=None):
 
     # The query year does not matter, it is only used for getting a dataframe that can be added to.
     df = px.data.gapminder().query("year==2007")
-    df["sensor_count"] = 0
+    df["Sensor count"] = 0
     for i, row in df.iterrows():
-        df.at[i, "sensor_count"] = country_sensor_count.get(row["country"])
+        df.at[i, "Sensor count"] = country_sensor_count.get(row["country"])
 
     # Plot the modified dataframe in a choropleth map.
     fig = px.choropleth(df, locations="iso_alpha",
-                        color="sensor_count",
+                        color="Sensor count",
                         hover_name="country",
-                        color_continuous_scale=px.colors.sequential.Blues)
+                        color_continuous_scale=px.colors.sequential.Viridis)
     fig.show()
 
 
@@ -69,4 +67,4 @@ def plot_sensor_count(sensor_types, start_date, end_date):
 
 
 # plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
-plot_sensor_location_distribution(["sds011"], date(2021, 1, 1))
+plot_sensor_location_distribution(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
