@@ -12,17 +12,17 @@ from preprocessor import Preprocessor
 from scraper import Scraper
 
 
-def plot_sensor_location_distribution(sensor_types, date):
+def plot_sensor_location_distribution(sensor_types, date, data_folder=None):
     """Plots a heatmap of how the sensors are distributed worldwide on the given date."""
-    path = f"data/{int(time.time())}_preprocessed"
+    if not data_folder:
+        data_folder = f"data/{int(time.time())}_preprocessed"
 
-    # Scrape and preprocess the data for the single day without combining city data.
-    preprocessor = Preprocessor(path)
-    scraper = Scraper([], start_date=date, end_date=date, sensor_types=sensor_types, preprocessor=preprocessor)
-    scraper.start()
+        # Scrape and preprocess the data for the single day without combining city data.
+        preprocessor = Preprocessor(data_folder)
+        scraper = Scraper([], start_date=date, end_date=date, sensor_types=sensor_types, preprocessor=preprocessor)
+        scraper.start()
 
     # Plot the resulting dictionary in a choropleth map.
-
 
 def plot_sensor_count(sensor_types, start_date, end_date):
     """Plots a line chart showing how many sensors there were each month between the given dates."""
@@ -48,4 +48,4 @@ def plot_sensor_count(sensor_types, start_date, end_date):
 
 
 # plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
-plot_sensor_location_distribution(["sds011"], date(2017, 6, 1))
+plot_sensor_location_distribution(["sds011"], date(2017, 6, 1), "data/1615210461_preprocessed")
