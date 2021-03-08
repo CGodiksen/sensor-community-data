@@ -1,15 +1,27 @@
 """
 Utility functions for gathering metadata about the data from the Sensor.Community archive.
 """
-import matplotlib.pyplot as plt
+import os
+import time
+from collections import defaultdict
 from datetime import date, timedelta
+
+import matplotlib.pyplot as plt
+
+from preprocessor import Preprocessor
 from scraper import Scraper
 
 
-
 def plot_sensor_location_distribution(sensor_types, date):
-    """Plots a heatmap of how the given sensors are distributed worldwide on the given date."""
-    pass
+    """Plots a heatmap of how the sensors are distributed worldwide on the given date."""
+    path = f"data/{int(time.time())}_preprocessed"
+
+    # Scrape and preprocess the data for the single day without combining city data.
+    preprocessor = Preprocessor(path)
+    scraper = Scraper([], start_date=date, end_date=date, sensor_types=sensor_types, preprocessor=preprocessor)
+    scraper.start()
+
+    # Plot the resulting dictionary in a choropleth map.
 
 
 def plot_sensor_count(sensor_types, start_date, end_date):
@@ -35,4 +47,5 @@ def plot_sensor_count(sensor_types, start_date, end_date):
     plt.show()
 
 
-plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
+# plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
+plot_sensor_location_distribution(["sds011"], date(2017, 6, 1))
