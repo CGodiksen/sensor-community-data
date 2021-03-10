@@ -39,14 +39,14 @@ def plot_sensor_location_distribution(sensor_types, date, data_folder=None):
                         color_continuous_scale=px.colors.sequential.Viridis)
 
     fig.update_layout(coloraxis_colorbar=dict(
-        title=dict(text="Sensor count", font=dict(size=16)),
+        title=dict(text="Sensor count", font=dict(size=18)),
         thicknessmode="pixels", thickness=60,
         yanchor="top", y=1,
         xanchor="right", x=1.03,
         ticks="outside",
-        tickfont=dict(size=14),
-        tickvals=np.log10([1000, 2000, 3000, 4000, 5000]),
-        ticktext=["1000", "2000", "3000", "4000", "5000"],
+        tickfont=dict(size=16),
+        tickvals=np.log10([10, 25, 50, 100, 250, 500, 1000, 2500, 5000]),
+        ticktext=["10", "25", "50", "100", "250", "500", "1000", "2500", "5000"],
     ))
     fig.show()
 
@@ -113,6 +113,6 @@ def __location_data_scrape(date, sensor_types):
     return data_folder
 
 
-plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
-# plot_sensor_location_distribution(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
+# plot_sensor_count(["sds011"], date(2017, 1, 1), date(2021, 3, 1))
+plot_sensor_location_distribution(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
 # sensor_location_continent_info(["sds011"], date(2021, 1, 1), "data/1615214611_preprocessed")
