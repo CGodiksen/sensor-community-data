@@ -1,4 +1,4 @@
-# Sensor Community Scraper
+# Sensor Community Data
 Tool for scraping and processing data from the sensor community archive: https://archive.sensor.community/
 
 ## Design
@@ -12,7 +12,7 @@ scraper = Scraper(["P1", "P2"], start_date=date(2017, 1, 1), end_date=date(2021,
                   preprocessor=preprocessor)
 scraper.start()
 ```
-The above example will scrape all data between 01/01/2017 and 01/01/2021 from the SDS011 sensor, keeping only the data measurements "P1" and "P2". When the data is scraped from the archive it is sent along to the given preprocessor which in this example combines all data within a single city and resamples it so there is a single data point per hour. Furthermore, the preprocessor also adds an additional column specifying whether or not the specific data point was collected during a COVID-19 lockdown as given by the Oxford government response tracker (https://www.bsg.ox.ac.uk/research/research-projects/covid-19-government-response-tracker).
+The above example will scrape all data between 01/01/2017 and 01/01/2021 from the SDS011 sensor, keeping only the data measurements "P1" and "P2". When the data has been scraped from the archive, it is sent along to the given preprocessor. In this example, the preprocessor combines all data from a single city and resamples it so there is a single data point per hour. Furthermore, the preprocessor also adds an additional column specifying whether or not the specific data point was collected during a COVID-19 lockdown, as given by the Oxford government response API (https://www.bsg.ox.ac.uk/research/research-projects/covid-19-government-response-tracker).
 
 ## Setup
 To use the preprocessor to reverse geocode locations that are not in the cache, you need to use the Google Maps API. This can be done by creating the file ```config.json``` in the project root and adding the following to the file:
