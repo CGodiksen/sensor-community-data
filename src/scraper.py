@@ -10,7 +10,6 @@ import requests
 from bs4 import BeautifulSoup
 
 
-# TODO: If the used config matches an existing config file then don't download already downloaded files.
 class Scraper:
     """
     Class allowing scraping data from the sensor community data archive. The specific data that should be scraped
@@ -23,9 +22,6 @@ class Scraper:
         measurements.
     url : str
         The url of the archive website.
-    dataframes : list of pd.dataframe
-        Dataframes that represent the run-time version of the scraped data. Use this attribute if the data should be
-        used directly in the preprocessor.
 
     Parameters
     ----------
@@ -50,7 +46,6 @@ class Scraper:
                  sensor_types=None, sensor_ids=None, remove_indoor=True, save_path=None, preprocessor=None):
         self.columns = ["location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
-        self.dataframes = []
 
         self.start_date = start_date
         self.end_date = end_date
@@ -68,7 +63,7 @@ class Scraper:
         date_urls = self.get_date_urls()
         daily_file_urls = Pool().map(self.get_file_urls, date_urls)
 
-        # If a preprocessor is given we pipe the data directly into the preprocessor daily.
+        # If a preprocessor is given, pipe the data directly into the preprocessor daily.
         if self.preprocessor:
             for file_urls in daily_file_urls:
                 dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
@@ -76,13 +71,12 @@ class Scraper:
 
                 self.preprocessor.dataframes = dataframes
                 self.preprocessor.start()
-        # If not, we scrape all the data concurrently and make it available to use through the dataframes attribute.
+        # If not, then scrape all the data concurrently.
         else:
             # Flattening the list of lists.
             file_urls = list(chain.from_iterable(daily_file_urls))
 
-            self.dataframes = Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
-            self.dataframes = [df for df in self.dataframes if not df.empty]
+            Pool().map(lambda file_url: self.__process_file(file_url), file_urls)
 
     # Creating a settings file specifying which settings are used for data retrieval.
     def __save_scrape_settings(self):
