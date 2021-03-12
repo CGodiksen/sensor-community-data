@@ -11,8 +11,8 @@ import plotly.express as px
 import numpy as np
 import pycountry_convert as pc
 
-from preprocessor import Preprocessor
-from scraper import Scraper
+from src.preprocessor import Preprocessor
+from src.scraper import Scraper
 
 
 def plot_sensor_location_distribution(sensor_types, date, data_folder=None):

@@ -46,13 +46,13 @@ class Preprocessor:
     """
     def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
                  add_lockdown_info=False):
-        with open("location_cache.json", "r") as location_cachefile:
+        with open("../location_cache.json", "r") as location_cachefile:
             self.location_cache = json.load(location_cachefile)
 
-        with open("lockdown_cache.json", "r") as lockdown_cachefile:
+        with open("../lockdown_cache.json", "r") as lockdown_cachefile:
             self.lockdown_cache = json.load(lockdown_cachefile)
 
-        with open("config.json", "r") as configfile:
+        with open("../config.json", "r") as configfile:
             self.api_key = json.load(configfile)['maps_api_key']
 
         self.save_path = save_path
@@ -109,10 +109,10 @@ class Preprocessor:
                 self.__dataframes_to_csv(location, location_dataframes)
 
         # Saving the potentially changed caches to persistent storage.
-        with open("location_cache.json", "w") as location_cachefile:
+        with open("../location_cache.json", "w") as location_cachefile:
             json.dump(self.location_cache, location_cachefile)
 
-        with open("lockdown_cache.json", "w") as lockdown_cachefile:
+        with open("../lockdown_cache.json", "w") as lockdown_cachefile:
             json.dump(self.lockdown_cache, lockdown_cachefile)
 
     # Creating a settings file specifying which settings are used for data preprocessing.
