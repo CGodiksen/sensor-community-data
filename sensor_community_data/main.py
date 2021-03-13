@@ -2,8 +2,8 @@ import logging
 import time
 from datetime import date
 
-from src.preprocessor import Preprocessor
-from src.scraper import Scraper
+from sensor_community_data.preprocessor import Preprocessor
+from sensor_community_data.scraper import Scraper
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
