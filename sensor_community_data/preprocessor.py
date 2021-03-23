@@ -181,6 +181,9 @@ class Preprocessor:
         del df["lon"]
         del df["location"]
 
+        for measurement in [i for i in list(df) if i != "timestamp"]:
+            df[measurement] = hampel(df[measurement], window_size=7, n=3)
+
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
         country = location.split("_")[-1]
