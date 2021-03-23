@@ -182,7 +182,11 @@ class Preprocessor:
 
         if self.clean_data:
             # Replacing data collected during New Years Eve if necessary.
-            # We consider 31/12-18:00 - 01/01/12:00 as New Years Eve.
+            # We consider 12/31-18:00 - 01/01/12:00 as New Years Eve.
+            if df.attrs["date"][-5:] == "12-31":
+                hour_series = df["timestamp"].map(lambda x: x.hour)
+                df.loc[hour_series >= 18, "P1"] = df["P1"].median()
+                print(df)
 
             # Cleaning the data using a rolling method (Hampel filter)
             for measurement in [i for i in list(df) if i != "timestamp"]:
