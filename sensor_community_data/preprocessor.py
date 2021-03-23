@@ -171,9 +171,7 @@ class Preprocessor:
             return ""
 
     # Doing preprocessing that should be applied to each dataframe individually.
-    @staticmethod
-    def __clean_dataframe(df):
-        logging.info("Cleaning dataframe...")
+    def __clean_dataframe(self, df):
         df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
 
         # Removing location information from the data itself since it is now handled as metadata.
@@ -181,8 +179,10 @@ class Preprocessor:
         del df["lon"]
         del df["location"]
 
-        for measurement in [i for i in list(df) if i != "timestamp"]:
-            df[measurement] = hampel(df[measurement], window_size=7, n=3)
+        if self.clean_data:
+            for measurement in [i for i in list(df) if i != "timestamp"]:
+                logging.info(f"Applying a hampel filter to {measurement}...")
+                df[measurement] = hampel(df[measurement], window_size=7, n=3)
 
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
