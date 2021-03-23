@@ -181,17 +181,17 @@ class Preprocessor:
         del df["location"]
 
         if self.clean_data:
-            # Replacing data collected during New Years Eve if necessary.
-            # We consider 12/31-18:00 - 01/01/12:00 as New Years Eve.
-            if df.attrs["date"][-5:] == "12-31":
-                hour_series = df["timestamp"].map(lambda x: x.hour)
-                df.loc[hour_series >= 18, "P1"] = (df.loc[hour_series < 18, "P1"]).median()
-                print(df)
-
-            # Cleaning the data using a rolling method (Hampel filter)
             for measurement in [i for i in list(df) if i != "timestamp"]:
+                # Replacing data collected during New Years Eve if necessary.
+                # We consider 12/31-18:00 - 01/01/12:00 as New Years Eve.
+                if df.attrs["date"][-5:] == "12-31":
+                    hour_series = df["timestamp"].map(lambda x: x.hour)
+                    df.loc[hour_series >= 18, measurement] = (df.loc[hour_series < 18, measurement]).median()
+
+                # Cleaning the data using a rolling method (Hampel filter)
                 logging.info(f"Applying a hampel filter to {measurement}...")
                 df[measurement] = hampel(df[measurement], window_size=3, n=3)
+
 
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
