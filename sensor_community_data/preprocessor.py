@@ -185,7 +185,7 @@ class Preprocessor:
             # We consider 12/31-18:00 - 01/01/12:00 as New Years Eve.
             if df.attrs["date"][-5:] == "12-31":
                 hour_series = df["timestamp"].map(lambda x: x.hour)
-                df.loc[hour_series >= 18, "P1"] = df["P1"].median()
+                df.loc[hour_series >= 18, "P1"] = (df.loc[hour_series < 18, "P1"]).median()
                 print(df)
 
             # Cleaning the data using a rolling method (Hampel filter)
