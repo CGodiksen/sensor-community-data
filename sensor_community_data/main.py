@@ -12,6 +12,6 @@ if __name__ == '__main__':
     preprocessor = Preprocessor(f"{path}_preprocessed", combine_city_data=True, resample_freq="60T",
                                 add_lockdown_info=True, clean_data=True)
 
-    scraper = Scraper(["P1", "P2"], start_date=date(2016, 12, 31), end_date=date(2016, 12, 31), sensor_types=["sds011"],
+    scraper = Scraper(["P1", "P2"], start_date=date(2017, 1, 1), end_date=date(2017, 1, 1), sensor_types=["sds011"],
                       preprocessor=preprocessor)
     scraper.start()

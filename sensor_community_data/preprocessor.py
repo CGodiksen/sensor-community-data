@@ -187,11 +187,13 @@ class Preprocessor:
                 if df.attrs["date"][-5:] == "12-31":
                     hour_series = df["timestamp"].map(lambda x: x.hour)
                     df.loc[hour_series >= 18, measurement] = (df.loc[hour_series < 18, measurement]).median()
+                elif df.attrs["date"][-5:] == "01-01":
+                    hour_series = df["timestamp"].map(lambda x: x.hour)
+                    df.loc[hour_series < 12, measurement] = (df.loc[hour_series >= 12, measurement]).median()
 
                 # Cleaning the data using a rolling method (Hampel filter)
                 logging.info(f"Applying a hampel filter to {measurement}...")
                 df[measurement] = hampel(df[measurement], window_size=3, n=3)
-
 
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
