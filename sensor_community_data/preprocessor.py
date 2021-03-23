@@ -45,7 +45,8 @@ class Preprocessor:
         If true, a column is added to the data with a 1 if the specific row was collected during a lockdown and a 0
         otherwise (the default is False).
     clean_data : bool, optional
-        if true, clean the data using a conventional Hampel filter. (the default is false).
+        if true, clean the data using a Hampel filter and replace data from New Years Eve if necessary.
+        (the default is false).
     """
     def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
                  add_lockdown_info=False, clean_data=False):
@@ -180,9 +181,13 @@ class Preprocessor:
         del df["location"]
 
         if self.clean_data:
+            # Replacing data collected during New Years Eve if necessary.
+            # We consider 31/12-18:00 - 01/01/12:00 as New Years Eve.
+
+            # Cleaning the data using a rolling method (Hampel filter)
             for measurement in [i for i in list(df) if i != "timestamp"]:
                 logging.info(f"Applying a hampel filter to {measurement}...")
-                df[measurement] = hampel(df[measurement], window_size=7, n=3)
+                df[measurement] = hampel(df[measurement], window_size=3, n=3)
 
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
