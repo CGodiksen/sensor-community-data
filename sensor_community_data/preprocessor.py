@@ -9,7 +9,6 @@ import requests
 import pycountry
 
 
-# TODO: Data cleaning
 class Preprocessor:
     """
     Class allowing preprocessing of data scraped from the sensor community data archive. How the data is preprocessed
@@ -43,9 +42,11 @@ class Preprocessor:
     add_lockdown_info : bool, optional
         If true, a column is added to the data with a 1 if the specific row was collected during a lockdown and a 0
         otherwise (the default is False).
+    clean_data : bool, optional
+        if true, clean the data using a conventional Hampel filter. (the default is false).
     """
     def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
-                 add_lockdown_info=False):
+                 add_lockdown_info=False, clean_data=False):
         with open("../cache/location_cache.json", "r") as location_cachefile:
             self.location_cache = json.load(location_cachefile)
 
@@ -59,6 +60,7 @@ class Preprocessor:
         self.combine_city_data = combine_city_data
         self.resample_freq = resample_freq
         self.add_lockdown_info = add_lockdown_info
+        self.clean_data = clean_data
 
         # Manually loading dataframes if a data location was given.
         if data_folder:
