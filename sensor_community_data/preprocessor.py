@@ -3,10 +3,12 @@ import collections
 import json
 import logging
 from pathlib import Path
+from multiprocessing.dummy import Pool
 
 import pandas as pd
 import requests
 import pycountry
+from hampel import hampel
 
 
 class Preprocessor:
@@ -92,7 +94,7 @@ class Preprocessor:
         grouped_dataframes_sensor_id = self.__group_dataframes_by_attribute(self.dataframes, "sensor_id")
         sensor_locations = self.__get_sensor_locations(grouped_dataframes_sensor_id)
 
-        self.__clean_individual_dataframes()
+        Pool().map(self.__clean_dataframe, self.dataframes)
 
         grouped_dataframes_location = self.__group_dataframes_by_location(grouped_dataframes_sensor_id, sensor_locations)
 
@@ -169,14 +171,15 @@ class Preprocessor:
             return ""
 
     # Doing preprocessing that should be applied to each dataframe individually.
-    def __clean_individual_dataframes(self):
-        for df in self.dataframes:
-            df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
+    @staticmethod
+    def __clean_dataframe(df):
+        logging.info("Cleaning dataframe...")
+        df["timestamp"] = pd.to_datetime(df["timestamp"], infer_datetime_format=True).dt.tz_localize(None)
 
-            # Removing location information from the data itself since it is now handled as metadata.
-            del df["lat"]
-            del df["lon"]
-            del df["location"]
+        # Removing location information from the data itself since it is now handled as metadata.
+        del df["lat"]
+        del df["lon"]
+        del df["location"]
 
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
