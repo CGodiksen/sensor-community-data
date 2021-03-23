@@ -253,11 +253,16 @@ class Preprocessor:
             df = df.resample(self.resample_freq, on="timestamp").mean()
             df.reset_index(level=0, inplace=True)
 
+            # Handle problems introduced by resampling such as missing values and unnecessary type casting.
+            df = df.fillna(df.median(numeric_only=True))
+            if self.add_lockdown_info:
+                df["lockdown"] = df["lockdown"].astype(int)
+
             # Rounding since resampling with mean results in too many decimals for the measurements.
             df = df.round(2)
 
-            resampled_dataframes.append(df)
             df.attrs["file_name"] = file_name
+            resampled_dataframes.append(df)
 
         return resampled_dataframes
 
