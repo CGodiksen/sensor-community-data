@@ -6,9 +6,10 @@ from pathlib import Path
 from multiprocessing.dummy import Pool
 
 import pandas as pd
+import numpy as np
 import requests
 import pycountry
-from hampel import hampel
+from scipy import stats
 
 
 class Preprocessor:
@@ -192,8 +193,8 @@ class Preprocessor:
                     df.loc[hour_series < 12, measurement] = (df.loc[hour_series >= 12, measurement]).median()
 
                 # Cleaning the data using a rolling method (Hampel filter)
-                logging.info(f"Applying a hampel filter to {measurement}...")
-                df[measurement] = hampel(df[measurement], window_size=3, n=3)
+                median = df[measurement].median()
+                df.loc[np.abs(stats.zscore(df[measurement])) > 3, measurement] = median
 
     # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
     def __add_lockdown_attribute(self, location, dataframes):
