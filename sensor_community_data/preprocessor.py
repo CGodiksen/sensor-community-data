@@ -46,11 +46,14 @@ class Preprocessor:
         If true, a column is added to the data with a 1 if the specific row was collected during a lockdown and a 0
         otherwise (the default is False).
     clean_data : bool, optional
-        if true, clean the data using a Hampel filter and replace data from New Years Eve if necessary.
+        if true, clean the data using a Hampel filter and replace data from New Years Eve if necessary
+        (the default is false).
+    force_full_day: bool, optional
+        If true, ensure that each day has a row for each hour. This only works when resampling to 1 hour.
         (the default is false).
     """
     def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
-                 add_lockdown_info=False, clean_data=False):
+                 add_lockdown_info=False, clean_data=False, force_full_day=False):
         with open("../cache/location_cache.json", "r") as location_cachefile:
             self.location_cache = json.load(location_cachefile)
 
@@ -65,6 +68,7 @@ class Preprocessor:
         self.resample_freq = resample_freq
         self.add_lockdown_info = add_lockdown_info
         self.clean_data = clean_data
+        self.force_full_day = force_full_day
 
         # Manually loading dataframes if a data location was given.
         if data_folder:
