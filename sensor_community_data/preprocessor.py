@@ -270,8 +270,11 @@ class Preprocessor:
             # Ensuring that there is a row for each hour in the day.
             if self.force_full_day and len(df.index) != 24:
                 timestamp = df.iloc[0]["timestamp"]
-                timestamp = pd.Timestamp(year=timestamp.year, month=timestamp.month, day=timestamp.day, hour=0)
-                print([timestamp + timedelta(hours=i) for i in range(24)])
+                first_timestamp = pd.Timestamp(year=timestamp.year, month=timestamp.month, day=timestamp.day, hour=0)
+
+                for timestamp in [first_timestamp + timedelta(hours=i) for i in range(24)]:
+                    if timestamp not in df["timestamp"].values:
+                        print(timestamp)
 
             df.attrs["file_name"] = file_name
             resampled_dataframes.append(df)
