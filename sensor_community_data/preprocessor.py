@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 from multiprocessing.dummy import Pool
+from datetime import date, timedelta
 
 import pandas as pd
 import numpy as np
@@ -265,6 +266,12 @@ class Preprocessor:
 
             # Rounding since resampling with mean results in too many decimals for the measurements.
             df = df.round(2)
+
+            # Ensuring that there is a row for each hour in the day.
+            if self.force_full_day and len(df.index) != 24:
+                timestamp = df.iloc[0]["timestamp"]
+                timestamp = pd.Timestamp(year=timestamp.year, month=timestamp.month, day=timestamp.day, hour=0)
+                print([timestamp + timedelta(hours=i) for i in range(24)])
 
             df.attrs["file_name"] = file_name
             resampled_dataframes.append(df)
