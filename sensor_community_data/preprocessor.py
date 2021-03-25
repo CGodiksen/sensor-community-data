@@ -272,9 +272,17 @@ class Preprocessor:
                 timestamp = df.iloc[0]["timestamp"]
                 first_timestamp = pd.Timestamp(year=timestamp.year, month=timestamp.month, day=timestamp.day, hour=0)
 
+                # Define the row that should be added when a row is missing.
+                row_filler = {"P1": df["P1"].median(), "P2": df["P2"].median()}
+                if self.add_lockdown_info:
+                    row_filler["lockdown"] = df.iloc[0]["lockdown"]
+
                 for timestamp in [first_timestamp + timedelta(hours=i) for i in range(24)]:
                     if timestamp not in df["timestamp"].values:
-                        print(timestamp)
+                        row_filler["timestamp"] = timestamp
+                        df = df.append(row_filler, ignore_index=True)
+
+                df = df.sort_values("timestamp")
 
             df.attrs["file_name"] = file_name
             resampled_dataframes.append(df)
