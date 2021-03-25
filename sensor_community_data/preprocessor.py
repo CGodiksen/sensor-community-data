@@ -272,11 +272,14 @@ class Preprocessor:
                 timestamp = df.iloc[0]["timestamp"]
                 first_timestamp = pd.Timestamp(year=timestamp.year, month=timestamp.month, day=timestamp.day, hour=0)
 
-                # Define the row that should be added when a row is missing.
-                row_filler = {"P1": df["P1"].median(), "P2": df["P2"].median()}
+                # Create the row that is used to fill missing rows, using median values of the existing measurements.
+                row_filler = {}
+                for measurement in [i for i in list(df) if i != "timestamp"]:
+                    row_filler[measurement] = df[measurement].median()
                 if self.add_lockdown_info:
                     row_filler["lockdown"] = df.iloc[0]["lockdown"]
 
+                # Check if a row is missing and fill it with the row filler if so.
                 for timestamp in [first_timestamp + timedelta(hours=i) for i in range(24)]:
                     if timestamp not in df["timestamp"].values:
                         row_filler["timestamp"] = timestamp
