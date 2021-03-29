@@ -121,7 +121,12 @@ class Scraper:
         # Removing urls that do not link to a CSV file.
         file_urls = list(filter(lambda file_url: file_url.endswith(".csv"), file_urls))
 
-        # Removing urls to data that does not use one of the specified sensor types, if any were specified.
+        # Removing urls that does not use a sensor id from the specified location, if a location was specified.
+        if self.location:
+            location_sensor_ids = [k for k, v in self.location_cache.items() if v == self.location]
+            file_urls = list(filter(lambda file_url: file_url.split("_")[3].replace(".csv", "") in location_sensor_ids, file_urls))
+
+        # Removing urls that does not use one of the specified sensor types, if any were specified.
         if self.sensor_types:
             file_urls = list(filter(
                 lambda file_url: any(sensor_type in file_url for sensor_type in self.sensor_types), file_urls))
