@@ -170,36 +170,3 @@ class Scraper:
 
         logging.info(f"Saving dataframe to {file_path}")
         df.to_csv(file_path, index=False)
-
-
-# Temporary utility function for converting the location cache from location ids to sensor ids.
-def convert_cache():
-    logging.basicConfig(level=logging.INFO)
-    with open("../cache/location_cache.json", "r") as old_location_cachefile:
-        old_location_cache = json.load(old_location_cachefile)
-
-        scraper = Scraper(["P1", "P2"], start_date=date(2021, 3, 25), end_date=date(2021, 3, 25), sensor_types=["sds011"])
-        date_urls = scraper.get_date_urls()
-
-        daily_file_urls = Pool().map(scraper.get_file_urls, date_urls)
-        file_urls = list(chain.from_iterable(daily_file_urls))
-
-        with open("../cache/new_location_cache.json", "r") as new_location_cachefile:
-            new_location_cache = json.load(new_location_cachefile)
-
-        dataframes = Pool().map(lambda url: pd.read_csv(url, nrows=1, sep=";", usecols=["sensor_id", "location"]), file_urls)
-
-        for df in dataframes:
-            sensor_id = df["sensor_id"].iloc[0]
-            location_id = df["location"].iloc[0]
-
-            try:
-                new_location_cache[str(sensor_id)] = old_location_cache[str(location_id)]
-            except KeyError:
-                print(f"{location_id} is not in cache.")
-
-    with open("../cache/new_location_cache.json", "w") as old_location_cachefile:
-        json.dump(new_location_cache, old_location_cachefile)
-
-
-convert_cache()
