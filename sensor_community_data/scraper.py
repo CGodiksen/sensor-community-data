@@ -17,6 +17,9 @@ class Scraper:
 
     Attributes
     ----------
+    location_cache : dict
+        Dictionary from location ids to the city and country connected to the id. The cache is loaded from persistent
+        storage on initialization.
     columns : list of str
         Columns that should be kept when retrieving the CSV data. This includes common columns and the wanted
         measurements.
@@ -47,6 +50,9 @@ class Scraper:
     """
     def __init__(self, measurements, start_date=date(2015, 10, 1), end_date=date.today() - timedelta(1), location=None,
                  sensor_types=None, sensor_ids=None, remove_indoor=True, save_path=None, preprocessor=None):
+        with open("../cache/location_cache.json", "r") as location_cachefile:
+            self.location_cache = json.load(location_cachefile)
+
         self.columns = ["location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
 
