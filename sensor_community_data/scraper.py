@@ -31,6 +31,9 @@ class Scraper:
         Date object specifying the first day to scrape data from (the default is January 10 2015).
     end_date : datetime.date, optional
         Date object specifying the last to to scrape data from (the default is yesterday).
+    location : str, optional
+        The city-country that should be collected from. Uses the location cache to choose the relevant sensors
+        (the default is None, meaning all locations will be included).
     sensor_types : list of str, optional
         The sensor types that should be scraped from (the default is None, meaning all sensor types will be included).
     sensor_ids : list of int, optional
@@ -42,13 +45,14 @@ class Scraper:
     preprocessor : :class:`Preprocessor`, optional
         The preprocessor to pipe the data into (the default is None, meaning the data is not piped anywhere).
     """
-    def __init__(self, measurements, start_date=date(2015, 10, 1), end_date=date.today() - timedelta(1),
+    def __init__(self, measurements, start_date=date(2015, 10, 1), end_date=date.today() - timedelta(1), location=None,
                  sensor_types=None, sensor_ids=None, remove_indoor=True, save_path=None, preprocessor=None):
         self.columns = ["location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
 
         self.start_date = start_date
         self.end_date = end_date
+        self.location = location
         self.sensor_types = sensor_types
         self.sensor_ids = sensor_ids
         self.remove_indoor = remove_indoor
