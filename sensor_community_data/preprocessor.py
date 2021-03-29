@@ -21,7 +21,7 @@ class Preprocessor:
     Attributes
     ----------
     location_cache : dict
-        Dictionary from location ids to the city and country connected to the id. The cache is loaded from persistent
+        Dictionary from sensor ids to the city and country connected to the id. The cache is loaded from persistent
         storage on initialization and saved again when preprocessing is done.
     lockdown_cache : dict
         Dictionary from date/country to the lockdown status of the country on the specific date. The cache is loaded
@@ -145,12 +145,11 @@ class Preprocessor:
         for sensor_id, sensor_id_dataframes in grouped_dataframes_sensor_id.items():
             df = sensor_id_dataframes[0]
 
-            location_id = str(df["location"].iloc[0])
             lat = df["lat"].iloc[0]
             lng = df["lon"].iloc[0]
 
-            location = self.__get_api_value(location_id, self.location_cache, lambda: self.__reverse_geocode(lat, lng))
-            logging.info(f"Simplified {location_id}, {lat}, {lng} to {location}")
+            location = self.__get_api_value(sensor_id, self.location_cache, lambda: self.__reverse_geocode(lat, lng))
+            logging.info(f"Simplified {sensor_id}, {lat}, {lng} to {location}")
 
             sensor_locations[sensor_id] = location.replace("/", "-")
 

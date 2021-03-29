@@ -18,7 +18,7 @@ class Scraper:
     Attributes
     ----------
     location_cache : dict
-        Dictionary from location ids to the city and country connected to the id. The cache is loaded from persistent
+        Dictionary from sensor ids to the city and country connected to the id. The cache is loaded from persistent
         storage on initialization.
     columns : list of str
         Columns that should be kept when retrieving the CSV data. This includes common columns and the wanted
