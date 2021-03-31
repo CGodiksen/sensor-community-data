@@ -55,7 +55,7 @@ class Scraper:
 
         self.columns = ["location", "lat", "lon", "timestamp"] + measurements
         self.url = "https://archive.sensor.community/"
-        self.sensor_types = sensor_type
+        self.sensor_type = sensor_type
 
         self.start_date = start_date
         self.end_date = end_date
@@ -127,9 +127,8 @@ class Scraper:
             file_urls = list(filter(lambda file_url: file_url.split("_")[3].replace(".csv", "") in location_sensor_ids, file_urls))
 
         # Removing urls that does not use one of the specified sensor types, if any were specified.
-        if self.sensor_types:
-            file_urls = list(filter(
-                lambda file_url: any(sensor_type in file_url for sensor_type in self.sensor_types), file_urls))
+        if self.sensor_type:
+            file_urls = list(filter(lambda file_url: self.sensor_type in file_url, file_urls))
 
         # Doing the same as above but for sensor ids.
         if self.sensor_ids:
