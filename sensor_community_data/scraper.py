@@ -50,7 +50,7 @@ class Scraper:
     """
     def __init__(self, measurements, sensor_type, start_date=date(2015, 10, 1), end_date=date.today() - timedelta(1),
                  location=None, sensor_ids=None, remove_indoor=True, save_path=None, preprocessor=None):
-        with open("../cache/location_cache.json", "r") as location_cachefile:
+        with open("cache/location_cache.json", "r") as location_cachefile:
             self.location_cache = json.load(location_cachefile)
 
         self.columns = ["location", "lat", "lon", "timestamp"] + measurements
