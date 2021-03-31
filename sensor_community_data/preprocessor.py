@@ -1,3 +1,4 @@
+import calendar
 import collections
 import json
 import logging
@@ -98,7 +99,7 @@ class Preprocessor:
             if location:
                 logging.info(f"Processing data from {location}")
                 if self.add_lockdown_info:
-                    self.__add_lockdown_attribute(location, location_dataframes)
+                    self.__add_lockdown_column(location, location_dataframes)
 
                 if self.combine_city_data:
                     location_dataframes = self.__combine_city_dataframes(location, location_dataframes)
@@ -186,29 +187,31 @@ class Preprocessor:
                 median = df[measurement].median()
                 df.loc[np.abs(stats.zscore(df[measurement])) > 3, measurement] = median
 
-    # Checks if the country was locked down on the specific day and adds the result to the metadata attributes.
-    def __add_lockdown_attribute(self, location, dataframes):
+    # Checks if the country was locked down on the specific day and adds the result to a new column.
+    @staticmethod
+    def __add_lockdown_column(location, dataframes):
+        lockdown_file = "c6_stay_at_home_requirements.csv"
+        lockdown_df = pd.read_csv(
+            f"https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/timeseries/{lockdown_file}")
+
         country = location.split("_")[-1]
 
-        try:
-            alpha_3_code = pycountry.countries.lookup(country).alpha_3
-
-            for df in dataframes:
+        for df in dataframes:
+            try:
                 date = df.attrs["date"]
-                key = f"{date}_{alpha_3_code}"
                 lockdown = 0
 
                 # 2020-01-01 was the first day with any restrictions so no reason to call API if date is before that.
                 if date >= "2020-01-01":
+                    formatted_date = f"{date[-2:]}{calendar.month_abbr[int(date[-5:-3])]}{date[:4]}"
+                    country = pycountry.countries.get(alpha_2=country).alpha_3
+
                     # The current threshold for what is considered a "lockdown" (any stay at home requirements).
-                    if self.__get_api_value(key, self.lockdown_cache, lambda: self.__get_lockdown_status(date, alpha_3_code)) > 0:
+                    if lockdown_df[lockdown_df["country_code"] == country][formatted_date].iloc[0] > 0:
                         lockdown = 1
 
                 df["lockdown"] = lockdown
-
-        except LookupError:
-            logging.warning(f"No alpha 3 code could be found for {country}")
-            for df in dataframes:
+            except (IndexError, AttributeError, KeyError):
                 df["lockdown"] = 0
 
     @staticmethod
