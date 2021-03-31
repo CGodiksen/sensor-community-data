@@ -202,13 +202,13 @@ class Preprocessor:
                 date = df.attrs["date"]
                 lockdown = 0
 
-                # 2020-01-01 was the first day with any restrictions so no reason to call API if date is before that.
+                # 2020-01-01 was the first day with any restrictions so no reason to check if date is before that.
                 if date >= "2020-01-01":
                     formatted_date = f"{date[-2:]}{calendar.month_abbr[int(date[-5:-3])]}{date[:4]}"
-                    country = pycountry.countries.get(alpha_2=country).alpha_3
+                    alpha_3_code = pycountry.countries.lookup(country).alpha_3
 
                     # The current threshold for what is considered a "lockdown" (any stay at home requirements).
-                    if self.lockdown_df[self.lockdown_df["country_code"] == country][formatted_date].iloc[0] > 0:
+                    if self.lockdown_df[self.lockdown_df["country_code"] == alpha_3_code][formatted_date].iloc[0] > 0:
                         lockdown = 1
 
                 df["lockdown"] = lockdown
