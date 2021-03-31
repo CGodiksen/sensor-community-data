@@ -44,7 +44,7 @@ class Preprocessor:
         If true, a column is added to the data with a 1 if the specific row was collected during a lockdown and a 0
         otherwise (the default is False).
     clean_data : bool, optional
-        if true, clean the data using a Hampel filter and replace data from New Years Eve if necessary
+        if true, clean the data using Z-score and replace data from New Years Eve if necessary
         (the default is false).
     """
     def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
@@ -214,20 +214,6 @@ class Preprocessor:
                 df["lockdown"] = lockdown
             except (IndexError, AttributeError, KeyError):
                 df["lockdown"] = 0
-
-    @staticmethod
-    def __get_lockdown_status(date, alpha_3_code):
-        # Getting the lockdown status of the specific country on the specific date with the Oxford API.
-        api_url = f"https://covidtrackerapi.bsg.ox.ac.uk/api/v2/stringency/actions/{alpha_3_code}/{date}"
-        api_response = requests.get(api_url).json()
-
-        try:
-            # Returning the policy value for the "Stay at home requirements" policy type.
-            # The different policy types and the meaning of the policy values can be seen here:
-            # https://github.com/OxCGRT/covid-policy-tracker/blob/master/documentation/codebook.md
-            return api_response["policyActions"][5]["policyvalue_actual"]
-        except IndexError:
-            return 0
 
     @staticmethod
     def __combine_city_dataframes(location, city_dataframes):
