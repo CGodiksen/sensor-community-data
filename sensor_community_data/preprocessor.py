@@ -68,6 +68,12 @@ class Preprocessor:
         else:
             self.dataframes = dataframes
 
+        # Load lockdown info from the oxford government response tracker if necessary.
+        if self.add_lockdown_info:
+            lockdown_file = "c6_stay_at_home_requirements.csv"
+            self.lockdown_df = pd.read_csv(
+                f"https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/timeseries/{lockdown_file}")
+
     # Parse through all csv files in the given data folder and load them into dataframes.
     def __get_dataframes(self):
         dataframes = []
@@ -188,12 +194,7 @@ class Preprocessor:
                 df.loc[np.abs(stats.zscore(df[measurement])) > 3, measurement] = median
 
     # Checks if the country was locked down on the specific day and adds the result to a new column.
-    @staticmethod
-    def __add_lockdown_column(location, dataframes):
-        lockdown_file = "c6_stay_at_home_requirements.csv"
-        lockdown_df = pd.read_csv(
-            f"https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/timeseries/{lockdown_file}")
-
+    def __add_lockdown_column(self, location, dataframes):
         country = location.split("_")[-1]
 
         for df in dataframes:
@@ -207,7 +208,7 @@ class Preprocessor:
                     country = pycountry.countries.get(alpha_2=country).alpha_3
 
                     # The current threshold for what is considered a "lockdown" (any stay at home requirements).
-                    if lockdown_df[lockdown_df["country_code"] == country][formatted_date].iloc[0] > 0:
+                    if self.lockdown_df[self.lockdown_df["country_code"] == country][formatted_date].iloc[0] > 0:
                         lockdown = 1
 
                 df["lockdown"] = lockdown
