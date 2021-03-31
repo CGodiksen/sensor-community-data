@@ -22,9 +22,6 @@ class Preprocessor:
     location_cache : dict
         Dictionary from sensor ids to the city and country connected to the id. The cache is loaded from persistent
         storage on initialization and saved again when preprocessing is done.
-    lockdown_cache : dict
-        Dictionary from date/country to the lockdown status of the country on the specific date. The cache is loaded
-        from persistent storage on initialization and saved again when preprocessing is done.
     api_key : str
         The API key used to make requests to the Google Maps API, which is used for reverse geocoding.
 
@@ -53,9 +50,6 @@ class Preprocessor:
                  add_lockdown_info=False, clean_data=False):
         with open("../cache/location_cache.json", "r") as location_cachefile:
             self.location_cache = json.load(location_cachefile)
-
-        with open("../cache/lockdown_cache.json", "r") as lockdown_cachefile:
-            self.lockdown_cache = json.load(lockdown_cachefile)
 
         with open("../config.json", "r") as configfile:
             self.api_key = json.load(configfile)['maps_api_key']
@@ -117,9 +111,6 @@ class Preprocessor:
         # Saving the potentially changed caches to persistent storage.
         with open("../cache/location_cache.json", "w") as location_cachefile:
             json.dump(self.location_cache, location_cachefile)
-
-        with open("../cache/lockdown_cache.json", "w") as lockdown_cachefile:
-            json.dump(self.lockdown_cache, lockdown_cachefile)
 
     # Creating a settings file specifying which settings are used for data preprocessing.
     def __save_preprocessing_settings(self):
