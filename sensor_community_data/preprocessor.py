@@ -44,7 +44,7 @@ class Preprocessor:
         If true, a column is added to the data with a 1 if the specific row was collected during a lockdown and a 0
         otherwise (the default is False).
     clean_data : bool, optional
-        if true, clean the data using Z-score and replace data from New Years Eve if necessary
+        if true, clean the data using Z-score outlier detection and replace data from New Years Eve if necessary
         (the default is false).
     """
     def __init__(self, save_path, data_folder=None, dataframes=None, combine_city_data=False, resample_freq=None,
@@ -189,7 +189,7 @@ class Preprocessor:
                     hour_series = df["timestamp"].map(lambda x: x.hour)
                     df.loc[hour_series < 12, measurement] = (df.loc[hour_series >= 12, measurement]).median()
 
-                # Cleaning the data using a rolling method (Hampel filter)
+                # Replacing outliers with the median using Z-score outlier detection.
                 median = df[measurement].median()
                 df.loc[np.abs(stats.zscore(df[measurement])) > 3, measurement] = median
 
